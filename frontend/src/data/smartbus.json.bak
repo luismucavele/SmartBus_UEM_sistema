@@ -1,0 +1,22 @@
+{
+  "buses": [
+    {"id":"BUS-001","code":"UEM-01","plate":"ABC-12-34","model":"Coaster","routeId":"R-01","driver":"António Nhantumbo","status":"em_circulacao","lat":-25.965,"lng":32.583,"speed":31,"nextStop":"Museu","eta":8,"traffic":"moderado","updated":"há 2 min","capacity":28},
+    {"id":"BUS-002","code":"UEM-02","plate":"ABC-23-45","model":"Rosa","routeId":"R-02","driver":"Marta Sitoe","status":"atrasado","lat":-25.952,"lng":32.601,"speed":14,"nextStop":"Junta","eta":18,"traffic":"intenso","updated":"há 1 min","capacity":32},
+    {"id":"BUS-003","code":"UEM-03","plate":"ABC-34-56","model":"Coaster","routeId":"R-03","driver":"Nelson Mucavele","status":"em_manutencao","lat":-25.977,"lng":32.595,"speed":0,"nextStop":"—","eta":0,"traffic":"—","updated":"há 12 min","capacity":28},
+    {"id":"BUS-004","code":"UEM-04","plate":"ABC-45-67","model":"Rosa","routeId":"R-01","driver":"Elias Tembe","status":"em_circulacao","lat":-25.988,"lng":32.57,"speed":26,"nextStop":"Malhangalene","eta":12,"traffic":"normal","updated":"há 3 min","capacity":32}
+  ],
+  "routes": [
+    {"id":"R-01","name":"Matola — UEM","origin":"Matola Gare","destination":"Campus Principal da UEM","stops":["Matola Gare","Machava","Junta","Museu","Malhangalene","UEM"],"departure":"06:00","arrival":"07:20","status":"activa"},
+    {"id":"R-02","name":"Costa do Sol — UEM","origin":"Costa do Sol","destination":"Campus Principal da UEM","stops":["Costa do Sol","Triunfo","Junta","Baixa","UEM"],"departure":"06:15","arrival":"07:15","status":"activa"},
+    {"id":"R-03","name":"Hulene — UEM","origin":"Hulene","destination":"Campus Principal da UEM","stops":["Hulene","Aeroporto","Museu","UEM"],"departure":"06:10","arrival":"07:05","status":"em manutenção"}
+  ],
+  "incidents": [
+    {"id":"INC-104","type":"Trânsito intenso","title":"Atraso na Junta","bus":"UEM-02","route":"Costa do Sol — UEM","priority":"média","status":"aberto","time":"08:12","description":"Congestionamento está a aumentar o tempo de viagem."},
+    {"id":"INC-103","type":"Manutenção","title":"Revisão preventiva","bus":"UEM-03","route":"Hulene — UEM","priority":"baixa","status":"em análise","time":"07:40","description":"Autocarro encaminhado para manutenção preventiva."}
+  ],
+  "notifications": [
+    {"id":"N-1","title":"Previsão actualizada","text":"O UEM-01 chega ao Museu em cerca de 8 minutos.","time":"há 2 min","kind":"info","read":false},
+    {"id":"N-2","title":"Atenção na Rota R-02","text":"Trânsito intenso provoca atraso estimado de 12 minutos.","time":"há 5 min","kind":"warning","read":false},
+    {"id":"N-3","title":"Serviço normalizado","text":"A Rota Matola — UEM está a operar normalmente.","time":"há 32 min","kind":"success","read":true}
+  ]
+}
