@@ -1,13 +1,24 @@
 const API_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
-let token: string | null = localStorage.getItem("smartbus_token");
+// Token stored per-tab via sessionStorage so each browser tab keeps its own session.
+let token: string | null = null;
+try { token = window.sessionStorage.getItem("smartbus_session"); } catch {}
 
 export function getApiToken() { return token; }
 
 export function setApiToken(value: string | null) {
   token = value;
-  if (value) localStorage.setItem("smartbus_token", value);
-  else localStorage.removeItem("smartbus_token");
+  try {
+    if (value) window.sessionStorage.setItem("smartbus_session", value);
+    else window.sessionStorage.removeItem("smartbus_session");
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function clearApiSession() {
+  token = null;
+  try { window.sessionStorage.removeItem("smartbus_session"); } catch {}
 }
 
 export class ApiError extends Error {

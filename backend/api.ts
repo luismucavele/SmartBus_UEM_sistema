@@ -135,6 +135,11 @@ api.post("/incidents", requireAuth, allowRoles("motorista", "administrador"), as
       finalRouteId = rows[0]?.rota_id ?? null;
     }
     const result = await query<any>(`INSERT INTO incidentes (autocarro_id, rota_id, criado_por, tipo, prioridade, titulo, descricao) VALUES (?,?,?,?,?,?,?)`, [finalBusId, finalRouteId, req.user!.id, type, priority, title, description]) as any;
+    // Avaria/acidente/fora_de_servico: o autocarro para de circular enquanto o incidente estiver aberto.
+    const stopStates = ["avaria", "acidente", "fora_de_servico"];
+    if (stopStates.includes(type)) {
+      await query(`UPDATE autocarros SET estado='em_manutencao', ultima_velocidade=0 WHERE id=?`, [finalBusId]);
+    }
     return res.status(201).json({ id: result.insertId, message: "Incidente registado." });
   } catch { return res.status(503).json({ error: "Não foi possível registar o incidente." }); }
 });
@@ -152,7 +157,7 @@ api.get("/incidents", requireAuth, allowRoles("motorista", "administrador"), asy
 });
 
 api.patch("/incidents/:id/resolve", requireAuth, allowRoles("administrador"), async (req, res) => {
-  try { await query(`UPDATE incidentes SET estado='resolvido', resolvido_por=?, resolvido_em=NOW() WHERE id=?`, [req.user!.id, req.params.id]); return res.json({ message: "Incidente resolvido." }); }
+  try { await query(`UPDATE incidentes SET estado='resolvido', resolvido_por=?, resolvido_em=NOW() WHERE id=?`, [req.user!.id, req.params.id]); await query(`UPDATE autocarros SET estado='em_circulacao' WHERE id IN (SELECT autocarro_id FROM incidentes WHERE id=?)`, [req.params.id]); return res.json({ message: "Incidente resolvido." }); }
   catch { return res.status(503).json({ error: "Não foi possível resolver o incidente." }); }
 });
 

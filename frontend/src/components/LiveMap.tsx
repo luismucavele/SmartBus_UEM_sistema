@@ -115,6 +115,45 @@ export function LiveMap({
   const simRef = useRef<Record<string, SimState>>({});
   const lastTickRef = useRef<number>(Date.now());
   const displaySim = externalSim && Object.keys(externalSim).length ? externalSim : simPos;
+  const simReadyRef = useRef(false);
+  const prevBusesRef = useRef<ApiBus[]>([]);
+
+  // Persist simulation state across refreshes using sessionStorage so the trip
+  // (distance along route, speed, stop timers) resumes instead of restarting.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.sessionStorage.getItem("smartbus_sim_state");
+      if (raw) simRef.current = JSON.parse(raw);
+    } catch { /* ignore */ }
+    simReadyRef.current = true;
+    return () => { simReadyRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!simReadyRef.current) return;
+    try {
+      window.sessionStorage.setItem("smartbus_sim_state", JSON.stringify(simRef.current));
+    } catch { /* ignore */ }
+  });
+
+  // When buses come from the server (different role/tab), reset simulation for
+  // buses that disappeared or changed identity so each view starts fresh.
+  useEffect(() => {
+    const prev = prevBusesRef.current;
+    const prevIds: string[] = prev.map(b => String(b.id));
+    const nextIds: string[] = buses.map(b => String(b.id));
+    for (const id of prevIds) if (!nextIds.includes(id)) delete simRef.current[id];
+    for (const b of buses) {
+      const id = String(b.id);
+      const prevBus = prev.find(p => String(p.id) === id);
+      if (!prevBus) {
+        // new bus (e.g. switching accounts): drop old state so it starts from its DB position
+        delete simRef.current[id];
+      }
+    }
+    prevBusesRef.current = buses;
+  }, [buses]);
 
   useEffect(() => { pickModeRef.current = pickMode; onPickPositionRef.current = onPickPosition; }, [pickMode, onPickPosition]);
 

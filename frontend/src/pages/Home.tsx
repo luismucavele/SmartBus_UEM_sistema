@@ -7,7 +7,7 @@ import {
   Search, ShieldCheck, Siren, Trash2, UserCog, UserPlus, Users, X, Zap, Plus,
 } from "lucide-react";
 import { LiveMap } from "@/components/LiveMap";
-import { authApi, getApiToken, setApiToken, smartBusApi, type ApiBus, type ApiIncident, type ApiNotification, type ApiRoute, type ApiUser, type DashboardData } from "@/lib/api";
+import { authApi, clearApiSession, getApiToken, setApiToken, smartBusApi, type ApiBus, type ApiIncident, type ApiNotification, type ApiRoute, type ApiUser, type DashboardData } from "@/lib/api";
 
 type Role = "funcionario" | "motorista" | "administrador";
 type BusStatus = "em_circulacao" | "atrasado" | "em_manutencao" | "fora_de_servico";
@@ -67,8 +67,8 @@ function routeStops(route: ApiRoute): string[] {
 function routeDisplayCode(route: ApiRoute) { return route.code || String(route.id); }
 
 function Login({ onLogin }: { onLogin: (user: ApiUser) => void }) {
-  const [email, setEmail] = useState("admin@uem.mz");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -87,8 +87,6 @@ function Login({ onLogin }: { onLogin: (user: ApiUser) => void }) {
     }
   };
 
-  const selectQuick = (r: Role) => { setEmail(roles[r].email); setPassword("123456"); };
-
   return (
     <div className="login-page">
       <div className="login-art">
@@ -105,15 +103,6 @@ function Login({ onLogin }: { onLogin: (user: ApiUser) => void }) {
       <div className="login-card animate-fade-in">
         <p className="eyebrow">ACESSO AO SISTEMA</p>
         <h2>Bem-vindo ao SmartBus</h2>
-        <p className="login-muted">Autenticação via API + MySQL. Configure o backend e o `.env` antes de iniciar.</p>
-        <div className="quick-accounts">
-          <span className="quick-accounts-label">Contas de demonstração:</span>
-          <div className="quick-accounts-buttons">
-            <button type="button" onClick={() => selectQuick("administrador")} className="quick-account-btn admin">Admin</button>
-            <button type="button" onClick={() => selectQuick("motorista")} className="quick-account-btn driver">Motorista</button>
-            <button type="button" onClick={() => selectQuick("funcionario")} className="quick-account-btn staff">Funcionário</button>
-          </div>
-        </div>
         <label>Email</label>
         <div className="login-input-wrapper">
           <Mail size={16} className="login-input-icon" />
@@ -128,10 +117,6 @@ function Login({ onLogin }: { onLogin: (user: ApiUser) => void }) {
         <button className="primary-button login-button" onClick={submit} disabled={loading}>
           {loading ? "A entrar…" : "Entrar"} <ArrowRight size={16} />
         </button>
-        <div className="demo-note">
-          <ShieldCheck size={16} />
-          <span>Sem dados simulados no frontend. Cadastre utilizadores, rotas e autocarros na base de dados ou pelos formulários administrativos.</span>
-        </div>
       </div>
     </div>
   );
@@ -249,7 +234,7 @@ export default function Home() {
     return true;
   });
 
-  const logout = () => { setApiToken(null); setUser(null); setSection("overview"); setData({ buses: [], incidents: [], notifications: [], routes: [] }); };
+  const logout = () => { clearApiSession(); setUser(null); setSection("overview"); setData({ buses: [], incidents: [], notifications: [], routes: [] }); };
   const categories = ["Operacional", "Gestão", "Analítica"] as const;
 
   return (
@@ -536,7 +521,7 @@ function IncidentsSection({ incidents, buses, routes, canCreate, canResolve, onR
   const [form, setForm] = useState({ busId: "", routeId: "", type: "outro", priority: "media", title: "", description: "" });
   const submit = async () => {
     if (!form.title || !form.description) return toast.error("Título e descrição são obrigatórios.");
-    try { await smartBusApi.createIncident({ ...form, busId: form.busId || null, routeId: form.routeId || null }); toast.success("Incidente registado."); setOpen(false); setForm({ busId: "", routeId: "", type: "outro", priority: "media", title: "", description: "" }); onReload(); } catch (err) { toast.error(err instanceof Error ? err.message : "Erro."); }
+    try { await smartBusApi.createIncident({ ...form, busId: form.busId || null, routeId: form.routeId || null }); toast.success("Incidente registado. O autocarro fica em manutenção até ser resolvido."); setOpen(false); setForm({ busId: "", routeId: "", type: "outro", priority: "media", title: "", description: "" }); onReload(); } catch (err) { toast.error(err instanceof Error ? err.message : "Erro."); }
   };
   const resolve = async (id: number) => { try { await smartBusApi.resolveIncident(id); toast.success("Incidente resolvido."); onReload(); } catch (err) { toast.error(err instanceof Error ? err.message : "Erro."); } };
   return (
@@ -746,17 +731,90 @@ function UsersSection({ users, onReload }: { users: ApiUser[]; onReload: () => v
 }
 
 function ReportsSection({ buses, incidents, routes }: { buses: ApiBus[]; incidents: ApiIncident[]; routes: ApiRoute[] }) {
+  const totalBuses = buses.length;
   const active = buses.filter(b => b.status === "em_circulacao").length;
-  const open = incidents.filter(i => i.status !== "resolvido" && i.status !== "cancelado").length;
+  const delayed = buses.filter(b => b.status === "atrasado").length;
+  const maintenance = buses.filter(b => b.status === "em_manutencao").length;
+  const outOfService = buses.filter(b => b.status === "fora_de_servico").length;
+  const availability = totalBuses ? Math.round((active / totalBuses) * 100) : 0;
+  const openIncidents = incidents.filter(i => i.status !== "resolvido" && i.status !== "cancelado").length;
+  const highIncidents = incidents.filter(i => (i.priority === "alta" || i.priority === "critica") && i.status !== "resolvido").length;
+  const resolved = incidents.filter(i => i.status === "resolvido").length;
+  const resolutionRate = incidents.length ? Math.round((resolved / incidents.length) * 100) : 0;
+  const incidentsByBus = new Map<string, number>();
+  for (const i of incidents) { const k = String(i.bus || i.bus_code || "—"); incidentsByBus.set(k, (incidentsByBus.get(k) ?? 0) + 1); }
+  const topBuses = Array.from(incidentsByBus.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const bars = (total: number, value: number, max: number) => total ? Math.round((value / total) * max) : 0;
   return (
     <>
-      <PageIntro eyebrow="RELATÓRIOS" title="Indicadores operacionais" text="Indicadores calculados a partir dos dados cadastrados." />
+      <PageIntro eyebrow="RELATÓRIOS" title="Indicadores operacionais" text="Dados reais calculados a partir da base de dados (buses, rotas e incidentes)." />
       <div className="report-grid">
-        <div className="report-card panel"><span className="report-icon green"><Activity size={22} /></span><b>{buses.length ? Math.round((active / buses.length) * 100) : 0}%</b><small>Frota em circulação</small></div>
-        <div className="report-card panel"><span className="report-icon yellow"><Clock3 size={22} /></span><b>{open}</b><small>Incidentes em aberto</small></div>
-        <div className="report-card panel"><span className="report-icon blue"><Bus size={22} /></span><b>{routes.length}</b><small>Rotas cadastradas</small></div>
+        <div className="report-card panel"><span className="report-icon green"><Bus size={20} /></span><b>{totalBuses}</b><small>Autocarros cadastrados</small></div>
+        <div className="report-card panel"><span className="report-icon green"><Activity size={20} /></span><b>{active}</b><small>Em circulação ({availability}%)</small></div>
+        <div className="report-card panel"><span className="report-icon yellow"><Clock3 size={20} /></span><b>{delayed}</b><small>Atrasados</small></div>
+        <div className="report-card panel"><span className="report-icon red"><AlertTriangle size={20} /></span><b>{maintenance + outOfService}</b><small>Indisponíveis</small></div>
+        <div className="report-card panel"><span className="report-icon blue"><Bell size={20} /></span><b>{openIncidents}</b><small>Incidentes em aberto</small></div>
+        <div className="report-card panel"><span className="report-icon purple"><RouteIcon size={20} /></span><b>{routes.length}</b><small>Rotas cadastradas</small></div>
       </div>
-      <div className="panel report-summary" style={{ marginTop: 16 }}><div><p className="eyebrow">ESTADO</p><h3>Dados reais</h3><p>Este painel deixa de usar simulação estática. Para previsões avançadas (ETA/IA), é necessário alimentar posições GPS e histórico de trânsito via API/dispositivos.</p></div><span className="report-illustration"><Navigation size={38} /></span></div>
+
+      <div className="panel report-summary" style={{ marginTop: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div>
+            <p className="eyebrow">ESTADO DA FROTA</p>
+            <div className="chart-list">
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <span style={{ width: 12 }}><div className="chip green" style={{ width: bars(totalBuses, active, 90) }} /></span>
+                <span style={{ fontSize: 12, color: "#374151" }}>{active}</span><span style={{ marginLeft: "auto", fontSize: 12 }}>{availability}% em circulação</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <span style={{ width: 12 }}><div className="chip yellow" style={{ width: bars(totalBuses, delayed, 90) }} /></span>
+                <span style={{ fontSize: 12, color: "#374151" }}>{delayed}</span><span style={{ marginLeft: "auto", fontSize: 12 }}>atrasados</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ width: 12 }}><div className="chip red" style={{ width: bars(totalBuses, maintenance + outOfService, 90) }} /></span>
+                <span style={{ fontSize: 12, color: "#374151" }}>{maintenance + outOfService}</span><span style={{ marginLeft: "auto", fontSize: 12 }}>indisponíveis</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="eyebrow">INCIDENTES</p>
+            <div className="chart-list">
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <span style={{ width: 12 }}><div className="chip yellow" style={{ width: bars(incidents.length, openIncidents, 90) }} /></span>
+                <span style={{ fontSize: 12, color: "#374151" }}>{openIncidents}</span><span style={{ marginLeft: "auto", fontSize: 12 }}>em aberto</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <span style={{ width: 12 }}><div className="chip red" style={{ width: bars(incidents.length, highIncidents, 90) }} /></span>
+                <span style={{ fontSize: 12, color: "#374151" }}>{highIncidents}</span><span style={{ marginLeft: "auto", fontSize: 12 }}>alta/crítica</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ width: 12 }}><div className="chip green" style={{ width: bars(incidents.length, resolved, 90) }} /></span>
+                <span style={{ fontSize: 12, color: "#374151" }}>{resolved}</span><span style={{ marginLeft: "auto", fontSize: 12 }}>resolvidos ({resolutionRate}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {topBuses.length && (
+        <div className="panel report-summary" style={{ marginTop: 16 }}>
+          <p className="eyebrow">AUTO CARROS MAIS OCORRÊNCIAS</p>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead><tr><th style={{ textAlign: "left", padding: 8 }}><Bus size={14} /> Autocarro</th><th style={{ textAlign: "right", padding: 8 }}>Ocorrências</th></tr></thead>
+              <tbody>
+                {topBuses.map(([code, count]) => (
+                  <tr key={code}><td style={{ padding: 8, borderBottom: "1px solid #e5e7eb" }}><b>{code}</b></td><td style={{ padding: 8, borderBottom: "1px solid #e5e7eb", textAlign: "right" }}>{count}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      <div className="panel report-summary" style={{ marginTop: 16 }}>
+        <p className="eyebrow">NOTA</p>
+        <p>Estes indicadores são calculados em tempo real a partir dos dados cadastrados. Sem dispositivos GPS a reportar posições (`/buses/:id/status` / histórico), não há ETA nem previsões de chegada.</p>
+      </div>
     </>
   );
 }
