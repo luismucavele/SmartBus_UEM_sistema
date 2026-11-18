@@ -119,50 +119,6 @@ function Login({ onLogin }: { onLogin: (user: ApiUser) => void }) {
         <button className="primary-button login-button" onClick={submit} disabled={loading}>
           {loading ? "A entrar…" : "Entrar"} <ArrowRight size={16} />
         </button>
-
-        <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid #e5e7eb" }}>
-          <small style={{ display: "block", fontSize: 10.5, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 8 }}>
-            Contas reais na base de dados (1 clique):
-          </small>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            <button
-              type="button"
-              className="secondary-button btn-small"
-              onClick={() => { setEmail("carlos.manjate@uem.mz"); setPassword("123456"); }}
-              style={{ fontSize: 11, padding: "5px 7px", justifyContent: "flex-start", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-              title="Administrador: Carlos Manjate (carlos.manjate@uem.mz)"
-            >
-              👑 C. Manjate (Admin)
-            </button>
-            <button
-              type="button"
-              className="secondary-button btn-small"
-              onClick={() => { setEmail("ernesto.mabote@uem.mz"); setPassword("123456"); }}
-              style={{ fontSize: 11, padding: "5px 7px", justifyContent: "flex-start", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-              title="Motorista do autocarro UEM-01: Ernesto Mabote"
-            >
-              🚌 E. Mabote (UEM-01)
-            </button>
-            <button
-              type="button"
-              className="secondary-button btn-small"
-              onClick={() => { setEmail("alberto.nhampossa@uem.mz"); setPassword("123456"); }}
-              style={{ fontSize: 11, padding: "5px 7px", justifyContent: "flex-start", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-              title="Motorista do autocarro UEM-04: Alberto Nhampossa"
-            >
-              🚌 A. Nhampossa (UEM-04)
-            </button>
-            <button
-              type="button"
-              className="secondary-button btn-small"
-              onClick={() => { setEmail("amelia.nhantumbo@uem.mz"); setPassword("123456"); }}
-              style={{ fontSize: 11, padding: "5px 7px", justifyContent: "flex-start", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-              title="Funcionária UEM: Amélia Nhantumbo"
-            >
-              🎓 A. Nhantumbo (Func.)
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
