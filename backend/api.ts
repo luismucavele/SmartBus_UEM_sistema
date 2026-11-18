@@ -168,9 +168,43 @@ api.get("/notifications", requireAuth, async (req, res) => {
   catch { return res.status(503).json({ error: "Não foi possível carregar as notificações." }); }
 });
 
+api.patch("/notifications/read-all", requireAuth, async (req, res) => {
+  try {
+    await query(`UPDATE notificacoes SET lida_em=NOW() WHERE (utilizador_id IS NULL OR utilizador_id=?) AND lida_em IS NULL`, [req.user!.id]);
+    return res.json({ message: "Todas as notificações foram marcadas como lidas." });
+  } catch {
+    return res.status(503).json({ error: "Não foi possível atualizar as notificações." });
+  }
+});
+
 api.patch("/notifications/:id/read", requireAuth, async (req, res) => {
   try { await query(`UPDATE notificacoes SET lida_em=NOW() WHERE id=? AND (utilizador_id IS NULL OR utilizador_id=?)`, [req.params.id, req.user!.id]); return res.json({ message: "Notificação marcada como lida." }); }
   catch { return res.status(503).json({ error: "Não foi possível actualizar a notificação." }); }
+});
+
+api.post("/notifications", requireAuth, allowRoles("administrador"), async (req, res) => {
+  const { title, text, tipo = "info", userId } = req.body ?? {};
+  if (!title || !text) return res.status(400).json({ error: "Título e mensagem são obrigatórios." });
+  const validTipos = ["info", "alerta", "sucesso", "critica"];
+  const finalTipo = validTipos.includes(tipo) ? tipo : "info";
+  try {
+    const result: any = await query(
+      `INSERT INTO notificacoes (titulo, mensagem, tipo, utilizador_id, criado_em) VALUES (?, ?, ?, ?, NOW())`,
+      [String(title).trim(), String(text).trim(), finalTipo, userId ? Number(userId) : null]
+    );
+    return res.status(201).json({ id: result.insertId, message: "Notificação enviada com sucesso." });
+  } catch {
+    return res.status(503).json({ error: "Não foi possível criar a notificação." });
+  }
+});
+
+api.delete("/notifications/:id", requireAuth, allowRoles("administrador"), async (req, res) => {
+  try {
+    await query(`DELETE FROM notificacoes WHERE id = ?`, [req.params.id]);
+    return res.json({ message: "Notificação removida." });
+  } catch {
+    return res.status(503).json({ error: "Não foi possível remover a notificação." });
+  }
 });
 
 // ================= UTILIZADORES =================

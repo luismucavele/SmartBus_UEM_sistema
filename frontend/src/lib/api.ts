@@ -77,6 +77,9 @@ export const smartBusApi = {
 
   notifications: () => apiRequest<ApiNotification[]>("/notifications"),
   markNotificationRead: (id: string | number) => apiRequest<{ message: string }>(`/notifications/${id}/read`, { method: "PATCH" }),
+  markAllNotificationsRead: () => apiRequest<{ message: string }>("/notifications/read-all", { method: "PATCH" }),
+  createNotification: (data: Record<string, unknown>) => apiRequest<{ id: number; message: string }>("/notifications", { method: "POST", body: JSON.stringify(data) }),
+  deleteNotification: (id: string | number) => apiRequest<{ message: string }>(`/notifications/${id}`, { method: "DELETE" }),
 
   updateBus: (id: string | number, data: Record<string, unknown>) => apiRequest<{ message: string }>(`/buses/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   updateRoute: (id: string | number, data: Record<string, unknown>) => apiRequest<{ message: string }>(`/routes/${id}`, { method: "PATCH", body: JSON.stringify(data) }),

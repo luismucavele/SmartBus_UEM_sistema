@@ -8,8 +8,12 @@
 -- versão do PHP: 8.0.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
+
+CREATE DATABASE IF NOT EXISTS `smartbus_uem` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `smartbus_uem`;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -82,6 +86,7 @@ CREATE TABLE IF NOT EXISTS `autocarro_motoristas` (
 --
 
 INSERT INTO `autocarro_motoristas` (`autocarro_id`, `motorista_id`, `inicio`, `fim`) VALUES
+(1, 2, '2026-11-11 12:18:49', NULL),
 (1, 19, '2026-11-11 12:18:49', NULL),
 (2, 20, '2026-11-11 12:18:49', NULL),
 (3, 21, '2026-11-11 12:18:49', NULL),
@@ -117,6 +122,14 @@ CREATE TABLE IF NOT EXISTS `incidentes` (
   KEY `idx_inc_data` (`criado_em`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Extraindo dados da tabela `incidentes`
+--
+
+INSERT INTO `incidentes` (`id`, `autocarro_id`, `rota_id`, `criado_por`, `tipo`, `prioridade`, `titulo`, `descricao`, `estado`, `resolvido_por`, `resolvido_em`, `criado_em`, `actualizado_em`) VALUES
+(1, 1, 1, 3, 'avaria', 'alta', 'Furo de pneu na paragem Albazine', 'Viatura parada no acostamento aguardando substituição do pneu traseiro.', 'resolvido', 3, '2026-11-11 14:00:00', '2026-11-11 12:30:00', '2026-11-11 14:00:00'),
+(2, 3, 5, 21, 'atraso', 'media', 'Congestionamento intenso na EN4', 'Tráfego lento devido a obras na via, atraso estimado de 15 minutos.', 'aberto', NULL, NULL, '2026-11-11 13:00:00', '2026-11-11 13:00:00');
+
 -- --------------------------------------------------------
 
 --
@@ -136,6 +149,14 @@ CREATE TABLE IF NOT EXISTS `notificacoes` (
   KEY `idx_notif_utilizador_lida` (`utilizador_id`,`lida_em`),
   KEY `idx_notif_data` (`criado_em`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Extraindo dados da tabela `notificacoes`
+--
+
+INSERT INTO `notificacoes` (`id`, `utilizador_id`, `titulo`, `mensagem`, `tipo`, `lida_em`, `criado_em`) VALUES
+(1, NULL, 'Início do Horário de Exames UEM', 'A frota SmartBus estará em operação contínua com reforço nas Linhas R-01 e R-03 entre as 06h00 e as 20h00.', 'info', NULL, '2026-11-11 08:00:00'),
+(2, NULL, 'Aviso de Manutenção Preventiva Programada', 'O autocarro UEM-03 passará por revisão mecânica preventiva no próximo sábado.', 'alerta', NULL, '2026-11-11 09:30:00');
 
 -- --------------------------------------------------------
 
@@ -240,7 +261,7 @@ CREATE TABLE IF NOT EXISTS `perfis` (
 --
 
 INSERT INTO `perfis` (`id`, `codigo`, `nome`, `descricao`, `criado_em`) VALUES
-(1, 'funcionario', 'FuncionÃ¡rio', 'Consulta autocarros, rotas, previsÃµes e notificaÃ§Ãµes', '2026-11-09 10:21:02'),
+(1, 'funcionario', 'Funcionário', 'Consulta autocarros, rotas, previsões e notificações', '2026-11-09 10:21:02'),
 (2, 'motorista', 'Motorista', 'Actualiza o estado do autocarro e comunica incidentes', '2026-11-09 10:21:02'),
 (3, 'administrador', 'Administrador', 'Administra utilizadores, frota, rotas e incidentes', '2026-11-09 10:21:02');
 
@@ -361,21 +382,24 @@ CREATE TABLE IF NOT EXISTS `utilizadores` (
 --
 
 INSERT INTO `utilizadores` (`id`, `perfil_id`, `nome_completo`, `email`, `telefone`, `palavra_passe_hash`, `matricula_uem`, `activo`, `ultimo_login_em`, `criado_em`, `actualizado_em`) VALUES
-(3, 3, 'Carlos Manjate', 'admin@uem.mz', '+258 84 000 0003', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-A-001', 1, '2026-11-11 15:13:17', '2026-11-09 10:21:02', '2026-11-11 13:13:17'),
-(4, 1, 'Amélia Nhantumbo', 'amelia.nhantumbo@uem.mz', '+258 84 210 0001', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-001', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(5, 1, 'José Cossa', 'jose.cossa@uem.mz', '+258 84 210 0002', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-002', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(6, 1, 'Fátima Macuácua', 'fatima.macuacua@uem.mz', '+258 84 210 0003', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-003', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(7, 1, 'Nelson Sitoe', 'nelson.sitoe@uem.mz', '+258 84 210 0004', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-004', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(8, 1, 'Graça Mondlane', 'graca.mondlane@uem.mz', '+258 84 210 0005', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-005', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(9, 1, 'Armando Tembe', 'armando.tembe@uem.mz', '+258 84 210 0006', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-006', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(10, 1, 'Celeste Matusse', 'celeste.matusse@uem.mz', '+258 84 210 0007', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-007', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(11, 1, 'Paulo Chissano', 'paulo.chissano@uem.mz', '+258 84 210 0008', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-008', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(12, 1, 'Isaura Langa', 'isaura.langa@uem.mz', '+258 84 210 0009', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-009', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(13, 1, 'Benedito Maposse', 'benedito.maposse@uem.mz', '+258 84 210 0010', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-010', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(19, 2, 'Ernesto Mabote', 'ernesto.mabote@uem.mz', '+258 84 310 0001', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-001', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(20, 2, 'Sérgio Chilaule', 'sergio.chilaule@uem.mz', '+258 84 310 0002', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-002', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(21, 2, 'Joaquim Zunguza', 'joaquim.zunguza@uem.mz', '+258 84 310 0003', '.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-003', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
-(22, 2, 'Alberto Nhampossa', 'alberto.nhampossa@uem.mz', '+258 84 310 0004', '$2b$10$UpxD3KncQxBDbQ5K4/0sHOYadgaTOl4FGap9yNxxYdUOwbvUKSkaq', 'UEM-M-004', 1, '2026-11-11 15:14:10', '2026-11-11 10:18:49', '2026-11-11 13:14:10');
+(1, 1, 'Funcionário Institucional', 'funcionario@uem.mz', '+258 84 210 0000', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-000', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(2, 2, 'Motorista Principal UEM', 'motorista@uem.mz', '+258 84 310 0000', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-000', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(3, 3, 'Carlos Manjate (Admin)', 'carlos.manjate@uem.mz', '+258 84 000 0003', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-A-001', 1, '2026-11-11 15:13:17', '2026-11-09 10:21:02', '2026-11-11 13:13:17'),
+(25, 3, 'Administrador do Sistema', 'admin@uem.mz', '+258 84 000 0000', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-A-000', 1, '2026-11-11 15:13:17', '2026-11-09 10:21:02', '2026-11-11 13:13:17'),
+(4, 1, 'Amélia Nhantumbo', 'amelia.nhantumbo@uem.mz', '+258 84 210 0001', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-001', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(5, 1, 'José Cossa', 'jose.cossa@uem.mz', '+258 84 210 0002', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-002', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(6, 1, 'Fátima Macuácua', 'fatima.macuacua@uem.mz', '+258 84 210 0003', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-003', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(7, 1, 'Nelson Sitoe', 'nelson.sitoe@uem.mz', '+258 84 210 0004', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-004', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(8, 1, 'Graça Mondlane', 'graca.mondlane@uem.mz', '+258 84 210 0005', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-005', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(9, 1, 'Armando Tembe', 'armando.tembe@uem.mz', '+258 84 210 0006', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-006', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(10, 1, 'Celeste Matusse', 'celeste.matusse@uem.mz', '+258 84 210 0007', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-007', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(11, 1, 'Paulo Chissano', 'paulo.chissano@uem.mz', '+258 84 210 0008', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-008', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(12, 1, 'Isaura Langa', 'isaura.langa@uem.mz', '+258 84 210 0009', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-009', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(13, 1, 'Benedito Maposse', 'benedito.maposse@uem.mz', '+258 84 210 0010', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-F-010', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(19, 2, 'Ernesto Mabote', 'ernesto.mabote@uem.mz', '+258 84 310 0001', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-001', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(20, 2, 'Sérgio Chilaule', 'sergio.chilaule@uem.mz', '+258 84 310 0002', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-002', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(21, 2, 'Joaquim Zunguza', 'joaquim.zunguza@uem.mz', '+258 84 310 0003', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-003', 1, NULL, '2026-11-11 10:18:49', '2026-11-11 10:18:49'),
+(22, 2, 'Alberto Nhampossa', 'alberto.nhampossa@uem.mz', '+258 84 310 0004', '$2b$10$tMK.UqnrtAWaK81xK1oAoemfPmLJqoSzOkiZY6r.K98R7lvYAdgUS', 'UEM-M-004', 1, '2026-11-11 15:14:10', '2026-11-11 10:18:49', '2026-11-11 13:14:10');
 
 --
 -- Restrições para despejos de tabelas
@@ -434,6 +458,7 @@ ALTER TABLE `previsoes_chegada`
 --
 ALTER TABLE `utilizadores`
   ADD CONSTRAINT `fk_utilizador_perfil` FOREIGN KEY (`perfil_id`) REFERENCES `perfis` (`id`);
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
