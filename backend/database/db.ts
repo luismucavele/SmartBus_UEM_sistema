@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10),
   queueLimit: 0,
-  timezone: "Z",
+  timezone: process.env.DB_TIMEZONE || "Africa/Maputo",
 });
 
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {

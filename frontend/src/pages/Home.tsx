@@ -4,7 +4,7 @@ import { Link, useLocation } from "wouter";
 import {
   Activity, AlertTriangle, ArrowRight, Bell, Bus, CheckCircle2, Clock3, Crosshair, Eye, EyeOff,
   Gauge, LayoutDashboard, LogOut, Lock, Mail, MapPin, Menu, MessageSquareWarning, Navigation, Route as RouteIcon,
-  Search, ShieldCheck, Siren, Trash2, UserCog, UserPlus, Users, X, Zap, Plus,
+  Search, Siren, Trash2, UserCog, UserPlus, Users, X, Zap, Plus,
 } from "lucide-react";
 import { LiveMap } from "@/components/LiveMap";
 import { authApi, clearApiSession, getApiToken, setApiToken, smartBusApi, type ApiBus, type ApiIncident, type ApiNotification, type ApiRoute, type ApiUser, type DashboardData } from "@/lib/api";
@@ -312,7 +312,7 @@ export default function Home() {
           {safeSection === "incidentes" && <IncidentsSection incidents={data.incidents} buses={data.buses} routes={data.routes} canCreate={role === "motorista" || role === "administrador"} canResolve={role === "administrador"} onReload={() => load()} role={role} />}
           {safeSection === "notificacoes" && <NotificationsSection notifications={data.notifications} onReload={() => load()} />}
           {safeSection === "autocarros" && <AdminBuses buses={data.buses} routes={data.routes} drivers={drivers} onTrack={id => { setSelectedBusId(id); setSection("mapa"); }} onReload={() => load()} simState={simState} />}
-          {safeSection === "utilizadores" && <UsersSection users={users} onReload={() => load()} />}
+          {safeSection === "utilizadores" && <UsersSection users={users} buses={data.buses} onReload={() => load()} />}
           {safeSection === "relatorios" && <ReportsSection buses={data.buses} incidents={data.incidents} routes={data.routes} />}
         </main>
       </div>
@@ -671,24 +671,34 @@ function AdminBuses({ buses, routes, drivers, onTrack, onReload, simState }: { b
   );
 }
 
-function UsersSection({ users, onReload }: { users: ApiUser[]; onReload: () => void }) {
+function UsersSection({ users, buses, onReload }: { users: ApiUser[]; buses: ApiBus[]; onReload: () => void }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ApiUser | null>(null);
-  const blank = { name: "", email: "", password: "123456", phone: "", matricula: "", role: "funcionario", active: true };
+  const [profileFilter, setProfileFilter] = useState<Role | "todos">("todos");
+  const blank = { name: "", email: "", password: "", phone: "", role: "funcionario" as Role, busId: "", active: true };
   const [form, setForm] = useState(blank);
+  const filteredUsers = useMemo(
+    () => profileFilter === "todos" ? users : users.filter(user => user.role === profileFilter),
+    [profileFilter, users],
+  );
+  const availableBuses = buses.filter(bus => !bus.driverId || Number(bus.driverId) === editing?.id);
   const openCreate = () => { setEditing(null); setForm(blank); setOpen(true); };
-  const openEdit = (u: ApiUser) => { setEditing(u); setForm({ name: u.name, email: u.email, password: "", phone: u.phone || "", matricula: u.matricula || "", role: u.role, active: !(u.active === false || u.active === 0) }); setOpen(true); };
+  const openEdit = (u: ApiUser) => {
+    setEditing(u);
+    setForm({ name: u.name, email: u.email, password: "", phone: u.phone || "", role: u.role, busId: u.busId ? String(u.busId) : "", active: !(u.active === false || u.active === 0) });
+    setOpen(true);
+  };
   const submit = async () => {
     if (!form.name || !form.email || (!editing && !form.password)) return toast.error("Nome, email e palavra-passe são obrigatórios.");
     try {
       if (editing) {
-        const payload: Record<string, unknown> = { name: form.name, email: form.email, phone: form.phone, matricula: form.matricula, role: form.role, active: form.active };
+        const payload: Record<string, unknown> = { name: form.name, email: form.email, phone: form.phone, role: form.role, busId: form.role === "motorista" ? form.busId : null, active: form.active };
         if (form.password) payload.password = form.password;
         await smartBusApi.updateUser(editing.id, payload);
         toast.success("Utilizador atualizado.");
       } else {
-        await smartBusApi.createUser(form);
-        toast.success("Utilizador cadastrado.");
+        await smartBusApi.createUser({ ...form, busId: form.role === "motorista" ? form.busId : null, password: form.password });
+        toast.success("Utilizador registrado.");
       }
       setOpen(false); onReload();
     } catch (err) { toast.error(err instanceof Error ? err.message : "Erro."); }
@@ -697,13 +707,23 @@ function UsersSection({ users, onReload }: { users: ApiUser[]; onReload: () => v
   return (
     <>
       <PageIntro eyebrow="RBAC" title="Utilizadores" text="Cadastre e edite utilizadores reais com perfis funcionário, motorista ou administrador." right={<button className="primary-button" onClick={openCreate}><UserPlus size={16} /> Novo utilizador</button>} />
-      <div className="rbac-banner"><ShieldCheck size={26} /><div><b>Controlo de acessos ativo</b><p>As permissões são aplicadas no backend por JWT e perfil.</p></div></div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+          Filtrar por perfil
+          <select className="login-input" value={profileFilter} onChange={e => setProfileFilter(e.target.value as Role | "todos")} style={{ width: "auto", minWidth: 180 }}>
+            <option value="todos">Todos os perfis</option>
+            <option value="administrador">Administrador</option>
+            <option value="funcionario">Funcionário</option>
+            <option value="motorista">Motorista</option>
+          </select>
+        </label>
+      </div>
       <div className="table-panel panel">
-        <table><thead><tr><th>Utilizador</th><th>Matrícula</th><th>Contacto</th><th>Perfil</th><th>Estado</th><th>Último login</th><th /></tr></thead><tbody>
-          {users.map(u => (
+        <table><thead><tr><th>Utilizador</th><th>Matrícula da viatura</th><th>Contacto</th><th>Perfil</th><th>Estado</th><th>Último login</th><th>Ações</th></tr></thead><tbody>
+          {filteredUsers.map(u => (
             <tr key={u.id}>
               <td><div className="table-user"><span className="avatar">{u.name[0]}</span><div><b>{u.name}</b><small>{u.email}</small></div></div></td>
-              <td><b>{u.matricula || "—"}</b></td>
+              <td><b>{u.role === "motorista" ? u.busPlate || "Sem viatura" : "—"}</b></td>
               <td><b>{u.phone || "—"}</b></td>
               <td><span className={`role-pill role-tag-${u.role}`}>{roles[u.role]?.label || u.role}</span></td>
               <td><span className={`status-tag ${u.active === false || u.active === 0 ? "status-red" : "status-green"}`}>{u.active === false || u.active === 0 ? "Inativo" : "Ativo"}</span></td>
@@ -711,18 +731,18 @@ function UsersSection({ users, onReload }: { users: ApiUser[]; onReload: () => v
               <td><div style={{ display: "flex", gap: 6 }}><button className="secondary-button btn-small" onClick={() => openEdit(u)}>Editar</button><button className="icon-button" onClick={() => remove(u.id)} title="Remover"><Trash2 size={15} /></button></div></td>
             </tr>
           ))}
-          {!users.length && <tr><td colSpan={7} style={{ padding: 16, color: "#6b7280" }}>Sem utilizadores carregados ou sem permissão.</td></tr>}
+          {!filteredUsers.length && <tr><td colSpan={7} style={{ padding: 16, color: "#6b7280" }}>{users.length ? "Nenhum utilizador neste perfil." : "Sem utilizadores carregados ou sem permissão."}</td></tr>}
         </tbody></table>
       </div>
       {open && <Modal title={editing ? "Editar utilizador" : "Cadastrar utilizador"} eyebrow="ADMINISTRAÇÃO" onClose={() => setOpen(false)} large>
         <div className="form-grid">
-          <label>Nome<input className="login-input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label>
-          <label>Email<input className="login-input" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label>
-          <label>Palavra-passe<input className="login-input" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder={editing ? "Deixe vazio para manter" : ""} /></label>
-          <label>Perfil<select className="login-input" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}><option value="funcionario">Funcionário</option><option value="motorista">Motorista</option><option value="administrador">Administrador</option></select></label>
-          <label>Telefone<input className="login-input" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></label>
-          <label>Matrícula UEM<input className="login-input" value={form.matricula} onChange={e => setForm({ ...form, matricula: e.target.value })} /></label>
-          <label style={{ gridColumn: "1 / -1", display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} /> Conta ativa</label>
+          <label>Nome<input className="login-input" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Nome completo" /></label>
+          <label>Email<input className="login-input" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="utilizador@uem.mz" /></label>
+          <label>Palavra-passe<input className="login-input" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder={editing ? "Deixe vazio para manter" : "Mínimo de 6 caracteres"} /></label>
+          <label>Perfil<select className="login-input" value={form.role} onChange={e => setForm({ ...form, role: e.target.value as Role, busId: e.target.value === "motorista" ? form.busId : "" })}><option value="funcionario">Funcionário</option><option value="motorista">Motorista</option><option value="administrador">Administrador</option></select></label>
+          <label>Telefone<input className="login-input" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+258 84 000 0000" /></label>
+          {form.role === "motorista" && <label>Viatura<select className="login-input" value={form.busId} onChange={e => setForm({ ...form, busId: e.target.value })}><option value="">Sem viatura associada</option>{availableBuses.map(bus => <option key={bus.id} value={bus.id}>{bus.code} — {bus.plate}{bus.driverId === editing?.id ? " (viatura atual)" : ""}</option>)}</select></label>}
+          <label style={{ gridColumn: "1 / -1", display: "flex", gap: 8, alignItems: "center" }}><input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} style={{ width: 14, height: 14, margin: 0, flexShrink: 0 }} /> Conta ativa</label>
         </div>
         <div className="modal-actions"><button className="secondary-button" onClick={() => setOpen(false)}>Cancelar</button><button className="primary-button" onClick={submit}>Guardar</button></div>
       </Modal>}
@@ -796,7 +816,7 @@ function ReportsSection({ buses, incidents, routes }: { buses: ApiBus[]; inciden
         </div>
       </div>
 
-      {topBuses.length && (
+      {topBuses.length ? (
         <div className="panel report-summary" style={{ marginTop: 16 }}>
           <p className="eyebrow">AUTO CARROS MAIS OCORRÊNCIAS</p>
           <div style={{ overflowX: "auto" }}>
@@ -810,7 +830,7 @@ function ReportsSection({ buses, incidents, routes }: { buses: ApiBus[]; inciden
             </table>
           </div>
         </div>
-      )}
+      ) : null}
       <div className="panel report-summary" style={{ marginTop: 16 }}>
         <p className="eyebrow">NOTA</p>
         <p>Estes indicadores são calculados em tempo real a partir dos dados cadastrados. Sem dispositivos GPS a reportar posições (`/buses/:id/status` / histórico), não há ETA nem previsões de chegada.</p>

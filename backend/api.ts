@@ -13,6 +13,8 @@ api.get("/health", async (_req, res) => {
 api.post("/auth/login", async (req, res) => {
   const { email, password } = req.body ?? {};
   if (!email || !password) return res.status(400).json({ error: "Email e palavra-passe são obrigatórios." });
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  const attemptKey = `login_attempts_${ip}`;
   try {
     const result = await authenticate(String(email), String(password));
     if (!result) return res.status(401).json({ error: "Credenciais inválidas." });
@@ -178,7 +180,14 @@ api.get("/users", requireAuth, allowRoles("administrador"), async (_req, res) =>
       SELECT u.id, u.nome_completo AS name, u.email, u.telefone AS phone,
              u.matricula_uem AS matricula, u.activo AS active,
              u.ultimo_login_em AS lastLogin, u.criado_em AS createdAt,
-             p.codigo AS role, p.nome AS roleName
+             p.codigo AS role, p.nome AS roleName,
+             (SELECT am.autocarro_id FROM autocarro_motoristas am
+              WHERE am.motorista_id = u.id AND am.fim IS NULL
+              ORDER BY am.inicio DESC LIMIT 1) AS busId,
+             (SELECT a.matricula FROM autocarro_motoristas am
+              INNER JOIN autocarros a ON a.id = am.autocarro_id
+              WHERE am.motorista_id = u.id AND am.fim IS NULL
+              ORDER BY am.inicio DESC LIMIT 1) AS busPlate
       FROM utilizadores u
       INNER JOIN perfis p ON p.id = u.perfil_id
       ORDER BY u.id ASC
@@ -189,67 +198,138 @@ api.get("/users", requireAuth, allowRoles("administrador"), async (_req, res) =>
   }
 });
 
-api.get("/drivers", requireAuth, async (_req, res) => {
+async function assignDriverBus(connection: any, driverId: number, busId: string | number | null | undefined) {
+  if (busId == null || busId === "") {
+    await connection.execute(
+      `UPDATE autocarro_motoristas SET fim = NOW() WHERE motorista_id = ? AND fim IS NULL`,
+      [driverId],
+    );
+    return;
+  }
+
+  const [drivers]: any = await connection.execute(
+    `SELECT u.id FROM utilizadores u INNER JOIN perfis p ON p.id = u.perfil_id
+     WHERE u.id = ? AND p.codigo = 'motorista' FOR UPDATE`,
+    [driverId],
+  );
+  if (!drivers.length) throw Object.assign(new Error("O utilizador selecionado não tem perfil de motorista."), { code: "DRIVER_INVALID" });
+
+  const [buses]: any = await connection.execute(`SELECT id FROM autocarros WHERE id = ? FOR UPDATE`, [busId]);
+  if (!buses.length) throw Object.assign(new Error("Viatura não encontrada."), { code: "BUS_NOT_FOUND" });
+
+  const [assignments]: any = await connection.execute(
+    `SELECT motorista_id FROM autocarro_motoristas WHERE autocarro_id = ? AND fim IS NULL FOR UPDATE`,
+    [busId],
+  );
+  if (assignments.some((assignment: any) => Number(assignment.motorista_id) !== Number(driverId))) {
+    throw Object.assign(new Error("Esta viatura já está associada a outro motorista."), { code: "BUS_UNAVAILABLE" });
+  }
+
+  await connection.execute(
+    `UPDATE autocarro_motoristas SET fim = NOW() WHERE motorista_id = ? AND autocarro_id <> ? AND fim IS NULL`,
+    [driverId, busId],
+  );
+  if (!assignments.length) {
+    await connection.execute(
+      `INSERT INTO autocarro_motoristas (autocarro_id, motorista_id, inicio) VALUES (?, ?, NOW())`,
+      [busId, driverId],
+    );
+  }
+}
+
+api.get("/drivers", requireAuth, allowRoles("administrador"), async (_req, res) => {
   try {
     const drivers = await query<any>(`
-      SELECT u.id, u.nome_completo AS name, u.email, u.telefone AS phone
+      SELECT u.id, u.nome_completo AS name, u.email, u.telefone AS phone, u.matricula_uem AS matricula, u.ultimo_login_em AS lastLogin
       FROM utilizadores u
       INNER JOIN perfis p ON p.id = u.perfil_id
       WHERE p.codigo = 'motorista' AND u.activo = TRUE
       ORDER BY u.nome_completo ASC
     `);
-    return res.json(drivers);
+    return res.json(drivers.map((d: any) => ({ id: d.id, name: d.name, email: d.email, phone: d.phone, matricula: d.matricula, lastLogin: d.lastLogin })));
   } catch {
     return res.status(503).json({ error: "Não foi possível carregar os motoristas." });
   }
 });
 
 api.post("/users", requireAuth, allowRoles("administrador"), async (req, res) => {
-  const { name, email, password, phone, matricula, role = "funcionario" } = req.body ?? {};
+  const { name, email, password, phone, matricula, role = "funcionario", busId, active = true } = req.body ?? {};
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Nome, email e palavra-passe são obrigatórios." });
   }
+  if (password.length < 6) return res.status(400).json({ error: "A palavra-passe deve ter pelo menos 6 caracteres." });
+  if (role !== "motorista" && busId) return res.status(400).json({ error: "Apenas motoristas podem ter uma viatura associada." });
   try {
     const profiles = await query<any>(`SELECT id FROM perfis WHERE codigo = ? LIMIT 1`, [role]);
     if (!profiles.length) return res.status(400).json({ error: "Perfil de utilizador inválido." });
     const perfilId = profiles[0].id;
     const hash = await bcrypt.hash(password, 10);
-    const result = await query<any>(
-      `INSERT INTO utilizadores (perfil_id, nome_completo, email, telefone, palavra_passe_hash, matricula_uem) VALUES (?, ?, ?, ?, ?, ?)`,
-      [perfilId, name, email.toLowerCase().trim(), phone || null, hash, matricula || null]
-    ) as any;
-    return res.status(201).json({ id: result.insertId, message: "Utilizador cadastrado com sucesso." });
+    const userId = await transaction(async connection => {
+      const [result]: any = await connection.execute(
+        `INSERT INTO utilizadores (perfil_id, nome_completo, email, telefone, palavra_passe_hash, matricula_uem, activo) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [perfilId, name, email.toLowerCase().trim(), phone || null, hash, matricula || null, active ? 1 : 0],
+      );
+      if (role === "motorista" && busId) await assignDriverBus(connection, result.insertId, busId);
+      return result.insertId;
+    });
+    return res.status(201).json({ id: userId, message: "Utilizador registrado com sucesso." });
   } catch (error: any) {
+    if (error?.code === "DRIVER_INVALID") return res.status(400).json({ error: error.message });
+    if (error?.code === "BUS_UNAVAILABLE") return res.status(409).json({ error: error.message });
+    if (error?.code === "BUS_NOT_FOUND") return res.status(404).json({ error: error.message });
     if (error?.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ error: "Já existe um utilizador com este email ou matrícula." });
     }
-    return res.status(503).json({ error: "Erro ao cadastrar utilizador na base de dados." });
+    return res.status(503).json({ error: "Erro ao registrar utilizador na base de dados." });
   }
 });
 
 api.patch("/users/:id", requireAuth, allowRoles("administrador"), async (req, res) => {
-  const { name, email, password, phone, matricula, role, active } = req.body ?? {};
+  const { name, email, password, phone, matricula, role, active, busId } = req.body ?? {};
   try {
-    const existing = await query<any>(`SELECT id FROM utilizadores WHERE id = ? LIMIT 1`, [req.params.id]);
+    const existing = await query<any>(`
+      SELECT u.id, p.codigo AS role
+      FROM utilizadores u INNER JOIN perfis p ON p.id = u.perfil_id
+      WHERE u.id = ? LIMIT 1
+    `, [req.params.id]);
     if (!existing.length) return res.status(404).json({ error: "Utilizador não encontrado." });
-    const fields: string[] = [];
-    const params: any[] = [];
-    if (name != null) { fields.push("nome_completo = ?"); params.push(name); }
-    if (email != null) { fields.push("email = ?"); params.push(String(email).toLowerCase().trim()); }
-    if (phone !== undefined) { fields.push("telefone = ?"); params.push(phone || null); }
-    if (matricula !== undefined) { fields.push("matricula_uem = ?"); params.push(matricula || null); }
-    if (active !== undefined) { fields.push("activo = ?"); params.push(active ? 1 : 0); }
-    if (password) { fields.push("palavra_passe_hash = ?"); params.push(await bcrypt.hash(String(password), 10)); }
+    if (name == null && email == null && password == null && phone === undefined && matricula === undefined && role === undefined && active === undefined && busId === undefined) {
+      return res.status(400).json({ error: "Nenhum campo para atualizar." });
+    }
+    const nextRole = role ?? existing[0].role;
+    if (nextRole !== "motorista" && busId) return res.status(400).json({ error: "Apenas motoristas podem ter uma viatura associada." });
+    let profileId: number | undefined;
     if (role) {
       const profiles = await query<any>(`SELECT id FROM perfis WHERE codigo = ? LIMIT 1`, [role]);
       if (!profiles.length) return res.status(400).json({ error: "Perfil inválido." });
-      fields.push("perfil_id = ?"); params.push(profiles[0].id);
+      profileId = profiles[0].id;
     }
-    if (!fields.length) return res.status(400).json({ error: "Nenhum campo para atualizar." });
-    params.push(req.params.id);
-    await query(`UPDATE utilizadores SET ${fields.join(", ")} WHERE id = ?`, params);
+    const passwordHash = password ? await bcrypt.hash(String(password), 10) : undefined;
+    await transaction(async connection => {
+      const fields: string[] = [];
+      const params: any[] = [];
+      if (name != null) { fields.push("nome_completo = ?"); params.push(name); }
+      if (email != null) { fields.push("email = ?"); params.push(String(email).toLowerCase().trim()); }
+      if (phone !== undefined) { fields.push("telefone = ?"); params.push(phone || null); }
+      if (matricula !== undefined) { fields.push("matricula_uem = ?"); params.push(matricula || null); }
+      if (active !== undefined) { fields.push("activo = ?"); params.push(active ? 1 : 0); }
+      if (passwordHash) { fields.push("palavra_passe_hash = ?"); params.push(passwordHash); }
+      if (profileId !== undefined) { fields.push("perfil_id = ?"); params.push(profileId); }
+      if (fields.length) {
+        params.push(req.params.id);
+        await connection.execute(`UPDATE utilizadores SET ${fields.join(", ")} WHERE id = ?`, params);
+      }
+      if (nextRole === "motorista" && (busId !== undefined || existing[0].role !== "motorista")) {
+        await assignDriverBus(connection, Number(req.params.id), busId);
+      } else if (nextRole !== "motorista" && existing[0].role === "motorista") {
+        await assignDriverBus(connection, Number(req.params.id), null);
+      }
+    });
     return res.json({ message: "Utilizador atualizado." });
   } catch (error: any) {
+    if (error?.code === "DRIVER_INVALID") return res.status(400).json({ error: error.message });
+    if (error?.code === "BUS_UNAVAILABLE") return res.status(409).json({ error: error.message });
+    if (error?.code === "BUS_NOT_FOUND") return res.status(404).json({ error: error.message });
     if (error?.code === "ER_DUP_ENTRY") return res.status(409).json({ error: "Email ou matrícula já existente." });
     return res.status(503).json({ error: "Erro ao atualizar utilizador." });
   }
@@ -284,13 +364,14 @@ api.post("/buses", requireAuth, allowRoles("administrador"), async (req, res) =>
         [code, plate, model, Number(capacity) || 40, rId, status, lat ?? null, lng ?? null, speed ?? null]
       );
       const newId = resBus.insertId;
-      if (driverId) {
-        await connection.execute(`INSERT INTO autocarro_motoristas (autocarro_id, motorista_id, inicio) VALUES (?, ?, NOW())`, [newId, driverId]);
-      }
+      if (driverId) await assignDriverBus(connection, Number(driverId), newId);
       return newId;
     });
     return res.status(201).json({ id: busId, message: "Autocarro cadastrado com sucesso." });
   } catch (error: any) {
+    if (error?.code === "DRIVER_INVALID") return res.status(400).json({ error: error.message });
+    if (error?.code === "BUS_UNAVAILABLE") return res.status(409).json({ error: error.message });
+    if (error?.code === "BUS_NOT_FOUND") return res.status(404).json({ error: error.message });
     if (error?.code === "ER_DUP_ENTRY") return res.status(409).json({ error: "Já existe um autocarro com este código ou matrícula." });
     return res.status(503).json({ error: "Erro ao cadastrar autocarro." });
   }
@@ -315,17 +396,20 @@ api.patch("/buses/:id", requireAuth, allowRoles("administrador"), async (req, re
         }
         fields.push("rota_id = ?"); params.push(rId);
       }
+      if (driverId !== undefined) {
+        if (driverId) await assignDriverBus(connection, Number(driverId), req.params.id);
+        else await connection.execute(`UPDATE autocarro_motoristas SET fim = NOW() WHERE autocarro_id = ? AND fim IS NULL`, [req.params.id]);
+      }
       if (fields.length) {
         params.push(req.params.id);
         await connection.execute(`UPDATE autocarros SET ${fields.join(", ")} WHERE id = ?`, params);
       }
-      if (driverId !== undefined) {
-        await connection.execute(`UPDATE autocarro_motoristas SET fim = NOW() WHERE autocarro_id = ? AND fim IS NULL`, [req.params.id]);
-        if (driverId) await connection.execute(`INSERT INTO autocarro_motoristas (autocarro_id, motorista_id, inicio) VALUES (?, ?, NOW())`, [req.params.id, driverId]);
-      }
     });
     return res.json({ message: "Autocarro atualizado." });
   } catch (error: any) {
+    if (error?.code === "DRIVER_INVALID") return res.status(400).json({ error: error.message });
+    if (error?.code === "BUS_UNAVAILABLE") return res.status(409).json({ error: error.message });
+    if (error?.code === "BUS_NOT_FOUND") return res.status(404).json({ error: error.message });
     if (error?.code === "ER_DUP_ENTRY") return res.status(409).json({ error: "Código ou matrícula já existente." });
     return res.status(503).json({ error: "Erro ao atualizar autocarro." });
   }

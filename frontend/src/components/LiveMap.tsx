@@ -339,7 +339,7 @@ export function LiveMap({
     const sp = sid ? displaySim[sid] : null;
     const lat = sp?.lat ?? toLatLng(selected?.lat); const lng = sp?.lng ?? toLatLng(selected?.lng);
     if (mapRef.current && lat != null && lng != null) mapRef.current.panTo([lat, lng], { animate: true, duration: 0.8 });
-  }, [selected?.id, selected?.lat, selected?.lng, pickMode, pickedPosition, displaySim]);
+  }, [selected?.id, selected?.lat, selected?.lng, pickMode, pickedPosition]);
 
   return (
     <div className={`live-map ${compact ? "live-map--compact" : ""}`}>

@@ -30,11 +30,18 @@ export async function authenticate(email: string, password: string) {
   return { user, token: createToken(user) };
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) return res.status(401).json({ error: "Autenticação necessária." });
   try {
-    req.user = jwt.verify(header.slice(7), JWT_SECRET) as AuthUser;
+    const payload = jwt.verify(header.slice(7), JWT_SECRET) as AuthUser;
+    // Revalidar na base: utilizador ativo e perfil actual.
+    const rows = await query<any>(`SELECT u.id, u.nome_completo AS name, u.email, p.codigo AS role, u.activo
+      FROM utilizadores u INNER JOIN perfis p ON p.id = u.perfil_id
+      WHERE u.id = ? AND u.activo = TRUE LIMIT 1`, [payload.id]);
+    const live = rows[0];
+    if (!live) return res.status(401).json({ error: "Sessão inválida ou utilizador inativo." });
+    req.user = { id: live.id, name: live.name, email: live.email, role: live.role };
     return next();
   } catch {
     return res.status(401).json({ error: "Sessão inválida ou expirada." });

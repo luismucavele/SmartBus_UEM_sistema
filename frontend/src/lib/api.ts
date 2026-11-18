@@ -40,7 +40,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   return body as T;
 }
 
-export type ApiUser = { id: number; name: string; email: string; role: "funcionario" | "motorista" | "administrador"; phone?: string | null; matricula?: string | null; active?: boolean | number; lastLogin?: string | null; roleName?: string };
+export type ApiUser = { id: number; name: string; email: string; role: "funcionario" | "motorista" | "administrador"; phone?: string | null; matricula?: string | null; busId?: number | string | null; busPlate?: string | null; active?: boolean | number; lastLogin?: string | null; roleName?: string };
 export type ApiStop = { name: string; latitude?: number | null; longitude?: number | null; order?: number };
 export type ApiRoute = { id: number; code: string; name: string; origin: string; destination: string; departure?: string | null; arrival?: string | null; estado?: string; stops?: ApiStop[] | string[]; total_paragens?: number };
 export type ApiBus = { id: number; code: string; plate: string; model: string; capacity?: number; routeId?: number | string | null; routeCode?: string | null; routeName?: string | null; driver?: string | null; driverId?: number | null; status: string; lat?: number | null; lng?: number | null; speed?: number | null; updated?: string | null; nextStop?: string | null };
