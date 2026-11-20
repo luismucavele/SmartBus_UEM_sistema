@@ -374,8 +374,23 @@ function Overview({
   const [breakdownPriority, setBreakdownPriority] = useState("alta");
   const [breakdownDesc, setBreakdownDesc] = useState("Falha mecânica no motor detetada pelo condutor durante o percurso. Viatura imobilizada.");
   const [breakdownLoading, setBreakdownLoading] = useState(false);
+  const [resumingLoading, setResumingLoading] = useState(false);
 
   const myBus = buses[0] || null;
+
+  const handleResumeCirculation = async () => {
+    if (!myBus) return;
+    setResumingLoading(true);
+    try {
+      await smartBusApi.updateBusStatus(myBus.id, "em_circulacao");
+      toast.success(`Viatura ${myBus.code} pronta! O autocarro retornou ao estado Em circulação.`);
+      onReload();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao retomar circulação.");
+    } finally {
+      setResumingLoading(false);
+    }
+  };
 
   const quickSelectReason = (title: string, desc: string, type = "avaria", priority = "alta") => {
     setBreakdownTitle(title);
@@ -585,14 +600,27 @@ function Overview({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            className="secondary-button"
-            style={{ background: "#ffffff", color: "#991b1b", borderColor: "#fca5a5", whiteSpace: "nowrap" }}
-            onClick={() => onSection("incidentes")}
-          >
-            Ver Chamado Técnico
-          </button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            <button
+              type="button"
+              className="secondary-button"
+              style={{ background: "#ffffff", color: "#991b1b", borderColor: "#fca5a5", whiteSpace: "nowrap" }}
+              onClick={() => onSection("incidentes")}
+            >
+              Ver Chamado Técnico
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ background: "#059669", borderColor: "#047857", whiteSpace: "nowrap" }}
+              onClick={handleResumeCirculation}
+              disabled={resumingLoading}
+              title="Marcar autocarro como reparado e retomar a circulação normal"
+            >
+              <CheckCircle2 size={15} />
+              {resumingLoading ? "A atualizar…" : "Retomar Circulação"}
+            </button>
+          </div>
         </div>
       )}
 

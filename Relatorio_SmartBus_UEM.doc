@@ -1,0 +1,840 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Relatório Técnico do Projeto - SmartBus UEM</title>
+<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page {
+    size: A4;
+    margin: 2.5cm 2.5cm 2.5cm 2.5cm;
+    mso-header-margin: 1.25cm;
+    mso-footer-margin: 1.25cm;
+  }
+  body {
+    font-family: 'Calibri', 'Arial', sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    text-align: justify;
+  }
+  .page-break {
+    page-break-before: always;
+    mso-break-type: section-break;
+  }
+  .cover {
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .cover-inst {
+    font-size: 14pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #005a36;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .cover-subinst {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #374151;
+    margin-top: 0;
+  }
+  .cover-title {
+    margin-top: 90px;
+    margin-bottom: 20px;
+  }
+  .cover-title h1 {
+    font-size: 26pt;
+    color: #005a36;
+    margin: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+    font-weight: 800;
+  }
+  .cover-title h2 {
+    font-size: 14pt;
+    color: #4b5563;
+    font-weight: normal;
+    margin-top: 15px;
+    line-height: 1.4;
+  }
+  .cover-author {
+    margin-top: 140px;
+    font-size: 13pt;
+    font-weight: bold;
+    color: #111827;
+  }
+  .cover-loc {
+    margin-top: 160px;
+    font-size: 11pt;
+    color: #4b5563;
+    font-weight: 600;
+  }
+  h1.section-title {
+    font-size: 17pt;
+    color: #005a36;
+    border-bottom: 2px solid #005a36;
+    padding-bottom: 6px;
+    margin-top: 28px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  h2.subsection-title {
+    font-size: 13pt;
+    color: #1f2937;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-left: 4px solid #005a36;
+    padding-left: 8px;
+  }
+  h3.subsubsection-title {
+    font-size: 11.5pt;
+    color: #374151;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+  p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-indent: 1.25cm;
+  }
+  .no-indent {
+    text-indent: 0 !important;
+  }
+  table.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    margin-bottom: 18px;
+    font-size: 10pt;
+  }
+  table.custom-table th {
+    background-color: #005a36;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 8px 10px;
+    border: 1px solid #004d2e;
+    text-align: left;
+  }
+  table.custom-table td {
+    padding: 7px 10px;
+    border: 1px solid #d1d5db;
+    vertical-align: top;
+  }
+  table.custom-table tr:nth-child(even) {
+    background-color: #f9fafb;
+  }
+  .callout-box {
+    background-color: #f0f7f3;
+    border: 1px solid #bce1ce;
+    border-left: 5px solid #005a36;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+  }
+  .callout-title {
+    font-weight: bold;
+    color: #005a36;
+    margin-bottom: 4px;
+  }
+  .link-badge {
+    display: inline-block;
+    background-color: #005a36;
+    color: #ffffff !important;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 9.5pt;
+    text-decoration: none;
+    font-family: monospace;
+    font-weight: bold;
+  }
+  .code-snippet {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 9.5pt;
+    color: #1f2937;
+    margin: 10px 0;
+    white-space: pre-wrap;
+  }
+  .figure-box {
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+  }
+  .figure-caption {
+    font-size: 9.5pt;
+    color: #4b5563;
+    margin-top: 8px;
+    font-style: italic;
+    text-align: center;
+    text-indent: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================== -->
+<!-- CAPA -->
+<!-- ========================================== -->
+<div class="cover">
+  <div>
+    <div class="cover-inst">Universidade Eduardo Mondlane</div>
+    <div class="cover-subinst">Faculdade de Ciências / Faculdade de Engenharia</div>
+    <div class="cover-subinst">Departamento de Matemática e Informática</div>
+  </div>
+
+  <div class="cover-title">
+    <h1>SmartBus UEM</h1>
+    <h2>Sistema Integrado de Rastreio em Tempo Real, Telemetria e Gestão Operacional de Transporte Universitário</h2>
+    <p class="no-indent" style="font-size: 11pt; color: #6b7280; margin-top: 25px;">
+      <b>Relatório Técnico de Engenharia de Software e Implementação de Sistema</b>
+    </p>
+  </div>
+
+  <div class="cover-author">
+    <p class="no-indent" style="margin-bottom: 4px;"><b>Autor:</b> Luís António Mucavele</p>
+    <p class="no-indent" style="font-size: 10pt; color: #4b5563; font-weight: normal;">Engenharia Informática / Tecnologias de Informação</p>
+  </div>
+
+  <div class="cover-loc">
+    Maputo, Moçambique<br>
+    Novembro de 2026
+  </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- FICHA TÉCNICA E LINKS DE ACESSO -->
+<!-- ========================================== -->
+<h1 class="section-title">Ficha Técnica e Acessos Oficiais do Projeto</h1>
+
+<p class="no-indent">O sistema <b>SmartBus UEM</b> foi inteiramente desenvolvido, integrado e publicado em ambiente de produção na nuvem com funcionamento 24/7 permanente. Abaixo constam os canais oficiais de acesso, repositório de código-fonte e credenciais de validação para a banca examinadora e corpo docente:</p>
+
+<table class="custom-table">
+  <thead>
+    <tr>
+      <th style="width: 30%;">Componente</th>
+      <th style="width: 70%;">Acesso / Localização</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Aplicação Web em Produção</b></td>
+      <td>
+        <a href="https://smartbus-uem-sistema.onrender.com" target="_blank" style="color: #005a36; font-weight: bold;">https://smartbus-uem-sistema.onrender.com</a><br>
+        <small style="color: #6b7280;">Hospedado no Render Cloud com certificado de segurança SSL/HTTPS ativo.</small>
+      </td>
+    </tr>
+    <tr>
+      <td><b>Repositório de Código-Fonte</b></td>
+      <td>
+        <a href="https://github.com/luismucavele/SmartBus_UEM_sistema" target="_blank" style="color: #005a36; font-weight: bold;">https://github.com/luismucavele/SmartBus_UEM_sistema</a><br>
+        <small style="color: #6b7280;">Controlo de versões Git com histórico de commits e documentação.</small>
+      </td>
+    </tr>
+    <tr>
+      <td><b>Base de Dados na Nuvem</b></td>
+      <td>
+        <b>TiDB Cloud Serverless (MySQL 8.0 Compatible)</b><br>
+        <small style="color: #6b7280;">Cluster: <code>smartbus-db</code> (gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000)</small>
+      </td>
+    </tr>
+    <tr>
+      <td><b>Credenciais: Administrador</b></td>
+      <td>
+        <b>Email:</b> <code>carlos.manjate@uem.mz</code> ou <code>admin@uem.mz</code> | <b>Palavra-passe:</b> <code>123456</code><br>
+        <small style="color: #005a36;">Acesso total: Frota, Rotas, Utilizadores/RBAC, Despacho, Relatórios e IA.</small>
+      </td>
+    </tr>
+    <tr>
+      <td><b>Credenciais: Motorista</b></td>
+      <td>
+        <b>Email:</b> <code>ernesto.mabote@uem.mz</code> (Autocarro UEM-01) | <b>Palavra-passe:</b> <code>123456</code><br>
+        <small style="color: #005a36;">Acesso operacional: Painel de bordo, mapa, acionamento imediato de avaria.</small>
+      </td>
+    </tr>
+    <tr>
+      <td><b>Credenciais: Funcionário/Passageiro</b></td>
+      <td>
+        <b>Email:</b> <code>amelia.nhantumbo@uem.mz</code> | <b>Palavra-passe:</b> <code>123456</code><br>
+        <small style="color: #005a36;">Acesso de passageiro: Mapa em direto, rotas, paragens, previsões e notificações.</small>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout-box">
+  <div class="callout-title">Declaração de Integridade do Deploy</div>
+  O sistema encontra-se online, operacional e acessível via Web a partir de qualquer dispositivo móvel (smartphone, tablet) ou computador. O banco de dados foi provisionado em arquitetura Serverless permanente e não sofre expiração temporal.
+</div>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- RESUMO / ABSTRACT -->
+<!-- ========================================== -->
+<h1 class="section-title">Resumo</h1>
+<p>O presente projeto reporta a conceção, desenvolvimento, testes e implantação do <b>SmartBus UEM</b>, uma plataforma web integrada de monitorização em tempo real, telemetria de frotas e previsão de mobilidade para o sistema de transporte institucional da Universidade Eduardo Mondlane (UEM), em Maputo, Moçambique. O sistema foi concebido para sanar os problemas históricos de imprevisibilidade dos horários dos autocarros universitários, ausência de canais em tempo real sobre avarias mecânicas e sobrelotação nos terminais entre os campi universitários (Campus Principal, Chiango, Faculdade de Engenharia e Matola). Desenvolvido sob uma arquitetura desacoplada em três camadas, combina um frontend dinâmico construído em React 19, TypeScript e Leaflet/OpenStreetMap, um backend robusto em Node.js com Express e autenticação segura baseada em JSON Web Tokens (JWT), e persistência relacional MySQL provisionada em nuvem na infraestrutura TiDB Cloud Serverless. O sistema implementa controlo de acesso baseado em funções (RBAC) para Administradores, Motoristas e Funcionários, incluindo um mecanismo de emergência onde o condutor imobiliza a viatura avariada em tempo real, atualizando a telemetria para zero e alertando a central de manutenção. O projeto foi validado com dados institucionais reais e colocado em produção na plataforma Render Cloud, comprovando a viabilidade de modernizar os transportes públicos académicos moçambicanos com tecnologias abertas de alto desempenho.</p>
+
+<p class="no-indent"><b>Palavras-chave:</b> Rastreio em Tempo Real, Transporte Universitário, UEM, React, Node.js, Leaflet, MySQL, Telemetria, RBAC.</p>
+
+<div style="margin-top: 35px;"></div>
+
+<h1 class="section-title">Abstract</h1>
+<p>This report documents the design, development, evaluation, and cloud deployment of <b>SmartBus UEM</b>, an integrated web platform for real-time tracking, fleet telemetry, and mobility forecasting dedicated to the institutional bus transport service of Eduardo Mondlane University (UEM) in Maputo, Mozambique. The system addresses critical operational challenges including arrival time unpredictability, lack of real-time communication regarding mechanical breakdowns, and stop congestion across academic campuses (Main Campus, Chiango, Faculty of Engineering, and Matola). Built upon a three-tier architecture, the solution integrates a reactive frontend developed with React 19, TypeScript, and Leaflet/OpenStreetMap, an Express-based Node.js backend utilizing JSON Web Token (JWT) role-based authorization, and a cloud-native relational MySQL database hosted on TiDB Cloud Serverless. The platform implements Role-Based Access Control (RBAC) across Administrators, Drivers, and Passengers, featuring a critical breakdown emergency mechanism that immediately immobilizes broken buses on the live map and notifies fleet dispatchers. Deployed to production on Render Cloud, the system demonstrates the feasibility of modernizing institutional academic transit in developing regions using efficient and scalable open web technologies.</p>
+
+<p class="no-indent"><b>Keywords:</b> Real-time Bus Tracking, Academic Transit, Eduardo Mondlane University, React, Node.js, Leaflet, MySQL, Telemetry, RBAC.</p>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- ÍNDICE DE CONTEÚDO -->
+<!-- ========================================== -->
+<h1 class="section-title">Lista de Siglas e Abreviaturas</h1>
+<table class="custom-table">
+  <tr><td><b>API</b></td><td>Application Programming Interface (Interface de Programação de Aplicações)</td></tr>
+  <tr><td><b>CA</b></td><td>Certificate Authority (Autoridade Certificadora)</td></tr>
+  <tr><td><b>CSS</b></td><td>Cascading Style Sheets (Folhas de Estilo em Cascata)</td></tr>
+  <tr><td><b>DER</b></td><td>Diagrama Entidade-Relacionamento</td></tr>
+  <tr><td><b>ETA</b></td><td>Estimated Time of Arrival (Tempo Estimado de Chegada)</td></tr>
+  <tr><td><b>GPS</b></td><td>Global Positioning System (Sistema de Posicionamento Global)</td></tr>
+  <tr><td><b>HTTP / HTTPS</b></td><td>Hypertext Transfer Protocol (Secure)</td></tr>
+  <tr><td><b>IA</b></td><td>Inteligência Artificial</td></tr>
+  <tr><td><b>JSON</b></td><td>JavaScript Object Notation</td></tr>
+  <tr><td><b>JWT</b></td><td>JSON Web Token</td></tr>
+  <tr><td><b>ORDBMS</b></td><td>Object-Relational Database Management System</td></tr>
+  <tr><td><b>RBAC</b></td><td>Role-Based Access Control (Controlo de Acesso Baseado em Perfis)</td></tr>
+  <tr><td><b>REST</b></td><td>Representational State Transfer</td></tr>
+  <tr><td><b>RF / RNF</b></td><td>Requisito Funcional / Requisito Não Funcional</td></tr>
+  <tr><td><b>SPA</b></td><td>Single Page Application (Aplicação de Página Única)</td></tr>
+  <tr><td><b>SSL / TLS</b></td><td>Secure Sockets Layer / Transport Layer Security</td></tr>
+  <tr><td><b>UEM</b></td><td>Universidade Eduardo Mondlane</td></tr>
+  <tr><td><b>UI / UX</b></td><td>User Interface / User Experience</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- CAPÍTULO 1: INTRODUÇÃO -->
+<!-- ========================================== -->
+<h1 class="section-title">Capítulo 1: Introdução</h1>
+
+<h2 class="subsection-title">1.1. Contextualização e Enquadramento Institucional</h2>
+<p>A Universidade Eduardo Mondlane (UEM), fundada em 1962, é a maior e mais antiga instituição pública de ensino superior em Moçambique. Composta por diversos campi dispersos pela área metropolitana de Maputo — incluindo o Campus Principal (Av. Julius Nyerere), a Faculdade de Engenharia (Av. de Moçambique), a Faculdade de Medicina (Hospital Central de Maputo) e o Campus de Chiango —, a universidade opera diariamente um serviço de transporte rodoviário institucional próprio.</p>
+<p>Este serviço de transporte é vital para a assiduidade e segurança de milhares de estudantes, docentes e membros do corpo técnico-administrativo que dependem das viaturas universitárias para se deslocarem entre as faculdades, residências e terminais urbanos da cidade.</p>
+
+<h2 class="subsection-title">1.2. Formulação do Problema</h2>
+<p>Apesar da sua importância crucial, a gestão da frota de autocarros da UEM historicamente operou sob modelos analógicos e reativos, enfrentando problemas substanciais:</p>
+<ul style="margin-left: 20px; margin-bottom: 15px;">
+  <li><b>Incerteza e Imprevisibilidade:</b> Os utentes não têm visibilidade sobre onde os autocarros se encontram, se já passaram por uma determinada paragem ou a que horas chegarão ao destino.</li>
+  <li><b>Comunicação Lenta de Avarias Mecânicas:</b> Quando um autocarro avaria nas avenidas movimentadas de Maputo (ex.: Praça dos Combatentes, EN4, Av. Julius Nyerere), a informação demora a chegar à central de tráfego, enquanto centenas de passageiros permanecem nas paragens sem saber que a carreira foi interrompida.</li>
+  <li><b>Incapacidade de Regulação de Tráfego:</b> Os motoristas operavam isolados, sem consciência de onde os outros colegas de escala se encontravam, gerando com frequência o fenómeno de "autocarros em comboio" (dois autocarros da mesma linha colados um ao outro e longos intervalos de espera a seguir).</li>
+  <li><b>Carência de Indicadores e Dados Analíticos:</b> A Direção de Administração e Património da UEM não dispunha de registos consolidados e métricas históricas para dimensionar a frota, avaliar a reincidência de avarias mecânicas e aferir a pontualidade.</li>
+</ul>
+
+<h2 class="subsection-title">1.3. Justificativa e Importância da Solução</h2>
+<p>A modernização digital do transporte institucional através de uma plataforma Web acessível por smartphone constitui uma resposta de elevado impacto social e académico. Ao disponibilizar em tempo real a posição geográfica das viaturas, o itinerário das paragens e um canal direto e blindado para reporte imediato de avarias mecânicas, o sistema reduz o tempo de espera nas paragens, otimiza a alocação de recursos públicos e eleva a segurança dos membros da comunidade universitária.</p>
+
+<h2 class="subsection-title">1.4. Objetivos do Projeto</h2>
+
+<h3 class="subsubsection-title">1.4.1. Objetivo Geral</h3>
+<p class="no-indent">Conceber, implementar e publicar em ambiente de nuvem um sistema web inteligente de monitorização, telemetria em tempo real e apoio à decisão operacional para a frota de transporte institucional da Universidade Eduardo Mondlane.</p>
+
+<h3 class="subsubsection-title">1.4.2. Objetivos Específicos</h3>
+<ol style="margin-left: 20px; margin-bottom: 15px;">
+  <li>Mapear as linhas, itinerários e paragens georreferenciadas dos principais corredores de transporte da UEM em Maputo.</li>
+  <li>Implementar um módulo cartográfico dinâmico com Leaflet e OpenStreetMap capaz de renderizar posições de GPS e estados operacionais em tempo real.</li>
+  <li>Desenvolver um fluxo de contingência de avaria mecânica em 1 clique para os motoristas, com imobilização imediata no mapa e acionamento da central técnica.</li>
+  <li>Estabelecer uma matriz rigorosa de controlo de acessos baseada em papéis (RBAC) com isolamento estrito de dados entre Administrador, Motorista e Passageiro.</li>
+  <li>Construir um módulo analítico com indicadores de pontualidade, gráficos estatísticos e diagnóstico preditivo para manutenção preventiva de frotas.</li>
+  <li>Efetuar o deploy em produção 24/7 permanente numa infraestrutura de nuvem resiliente, sem custos para a universidade.</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- CAPÍTULO 2: REQUISITOS DO SISTEMA -->
+<!-- ========================================== -->
+<h1 class="section-title">Capítulo 2: Engenharia de Requisitos e Regras de Negócio</h1>
+
+<h2 class="subsection-title">2.1. Matriz de Perfis de Utilizador (RBAC)</h2>
+<p>O sistema foi parametrizado com três perfis formais de utilizador, cada um munido de permissões estritas no backend e visualização adaptativa no frontend:</p>
+
+<table class="custom-table">
+  <thead>
+    <tr>
+      <th>Perfil</th>
+      <th>Descrição Operacional</th>
+      <th>Seções Acessíveis no Frontend</th>
+      <th>Privilégios de Escrita (API)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Administrador</b><br><code>administrador</code></td>
+      <td>Diretores de serviços gerais, despachantes centrais e técnicos de informática da UEM.</td>
+      <td>
+        • Visão Geral (Cockpit Executivo)<br>
+        • Mapa em Direto<br>
+        • Rotas e Paragens<br>
+        • Incidentes e Avarias<br>
+        • Notificações e Comunicados<br>
+        • Frota de Autocarros<br>
+        • Utilizadores e RBAC<br>
+        • Relatórios & IA
+      </td>
+      <td>Acesso total de escrita e remoção (CRUD) a viaturas, rotas, utilizadores, notificações e resolução técnica de avarias.</td>
+    </tr>
+    <tr>
+      <td><b>Motorista</b><br><code>motorista</code></td>
+      <td>Condutores efetivos escalados para os autocarros institucionais da UEM.</td>
+      <td>
+        • Visão Geral (Painel de Bordo)<br>
+        • Mapa em Direto (Com foco na viatura própria)<br>
+        • Rotas e Horários<br>
+        • Incidentes (Apenas da sua viatura)<br>
+        • Notificações Operacionais
+      </td>
+      <td>Restrito à sua viatura atribuída: declarar avaria imediata, reportar ocorrências e atualizar telemetria própria.</td>
+    </tr>
+    <tr>
+      <td><b>Funcionário / Passageiro</b><br><code>funcionario</code></td>
+      <td>Estudantes, docentes e corpo técnico universitário passageiros do serviço.</td>
+      <td>
+        • Visão Geral Académica<br>
+        • Mapa em Direto (Toda a frota pública)<br>
+        • Rotas e Itinerários<br>
+        • Notificações Institucionais
+      </td>
+      <td>Apenas leitura pública. Bloqueado contra cadastros e acionamento de falhas (HTTP 403 Forbidden).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="subsection-title">2.2. Requisitos Funcionais (RF)</h2>
+<table class="custom-table">
+  <thead>
+    <tr>
+      <th style="width: 12%;">Código</th>
+      <th style="width: 25%;">Nome</th>
+      <th style="width: 50%;">Descrição Detalhada</th>
+      <th style="width: 13%;">Prioridade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>RF01</b></td>
+      <td>Autenticação Segura</td>
+      <td>O sistema deve permitir login por email institucional (@uem.mz) e senha, gerando token JWT com expiração segura.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF02</b></td>
+      <td>Mapa de Rastreio GPS</td>
+      <td>Renderizar em mapa interativo a posição geográfica, velocidade instantânea e sentido dos autocarros em circulação.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF03</b></td>
+      <td>Itinerários e Paragens</td>
+      <td>Apresentar o itinerário das linhas universitárias com marcação georreferenciada de todas as paragens oficiais.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF04</b></td>
+      <td>Acionamento de Avaria</td>
+      <td>O motorista deve poder declarar avaria mecânica imediata com 1 clique (motor, pneu, eletricidade, travões, acidente).</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF05</b></td>
+      <td>Imobilização Automática</td>
+      <td>Ao declarar avaria, o autocarro deve transitar automaticamente para estado 'em_manutencao', zerar velocidade e alertar a central.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF06</b></td>
+      <td>Gestão de Frota (CRUD)</td>
+      <td>O Administrador deve poder cadastrar, editar, listar e remover autocarros, associando matrícula, capacidade e rota.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF07</b></td>
+      <td>Gestão de Rotas (CRUD)</td>
+      <td>O Administrador deve poder configurar códigos de linha, horários de partida/chegada e sequência ordenada de paragens.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF08</b></td>
+      <td>Gestão de Utilizadores</td>
+      <td>Cadastrar utilizadores, definir papéis RBAC e vincular motoristas exclusivos a cada autocarro da frota.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF09</b></td>
+      <td>Resolução de Avarias</td>
+      <td>O Administrador deve poder resolver incidentes técnicos, reativando a viatura para o estado 'em_circulacao'.</td>
+      <td>Obrigatório</td>
+    </tr>
+    <tr>
+      <td><b>RF10</b></td>
+      <td>Difusão de Avisos</td>
+      <td>Emitir notificações globais para todos os utentes ou direcionadas individualmente a condutores específicos.</td>
+      <td>Importante</td>
+    </tr>
+    <tr>
+      <td><b>RF11</b></td>
+      <td>Estimativa de Chegada</td>
+      <td>Calcular e apresentar previsão de minutos estimados para a chegada do autocarro às paragens seguintes.</td>
+      <td>Importante</td>
+    </tr>
+    <tr>
+      <td><b>RF12</b></td>
+      <td>Diagnóstico Preditivo IA</td>
+      <td>Analisar reincidência de falhas mecânicas e gerar recomendações preventivas automáticas de vistoria aos autocarros.</td>
+      <td>Importante</td>
+    </tr>
+    <tr>
+      <td><b>RF13</b></td>
+      <td>Exportação de Relatórios</td>
+      <td>Permitir o download de relatórios operacionais consolidados em formato CSV e suporte a impressão formal A4.</td>
+      <td>Desejável</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="subsection-title">2.3. Requisitos Não Funcionais (RNF)</h2>
+<table class="custom-table">
+  <thead>
+    <tr>
+      <th style="width: 15%;">Código</th>
+      <th style="width: 30%;">Classificação</th>
+      <th style="width: 55%;">Critério de Aceitação</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>RNF01</b></td>
+      <td>Desempenho e Latência</td>
+      <td>As respostas da API REST devem responder em menos de 500ms em condições normais de rede.</td>
+    </tr>
+    <tr>
+      <td><b>RNF02</b></td>
+      <td>Segurança Criptográfica</td>
+      <td>Palavras-passe armazenadas obrigatoriamente com salt e hash Bcrypt (10 rounds). Tokens JWT assinados com chave de 256 bits.</td>
+    </tr>
+    <tr>
+      <td><b>RNF03</b></td>
+      <td>Transporte Seguro (TLS)</td>
+      <td>Todo o tráfego Web e de base de dados deve ser cifrado via HTTPS e SSL TLS 1.2+.</td>
+    </tr>
+    <tr>
+      <td><b>RNF04</b></td>
+      <td>Disponibilidade (Uptime)</td>
+      <td>O sistema deve operar em regime de alta disponibilidade (24/7) através de arquitetura Serverless e Web Service.</td>
+    </tr>
+    <tr>
+      <td><b>RNF05</b></td>
+      <td>Responsividade Mobile</td>
+      <td>A interface deve adaptar-se perfeitamente a ecrãs de computadores, tablets e smartphones (Android e iOS).</td>
+    </tr>
+    <tr>
+      <td><b>RNF06</b></td>
+      <td>Integridade Referencial</td>
+      <td>A base de dados deve impor integridade referencial estrita com chaves estrangeiras (Foreign Keys) e transações atómicas.</td>
+    </tr>
+    <tr>
+      <td><b>RNF07</b></td>
+      <td>Compatibilidade</td>
+      <td>Compatível com os principais navegadores modernos (Google Chrome, Mozilla Firefox, Safari, Microsoft Edge).</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- CAPÍTULO 3: ARQUITETURA E MODELAÇÃO -->
+<!-- ========================================== -->
+<h1 class="section-title">Capítulo 3: Arquitetura e Modelação do Sistema</h1>
+
+<h2 class="subsection-title">3.1. Arquitetura em Camadas (Three-Tier Architecture)</h2>
+<p>O SmartBus UEM adota o padrão arquitetural em três camadas desacopladas, assegurando modularidade, segurança e facilidade de manutenção futura:</p>
+
+<div class="callout-box">
+  <b>1. Camada de Apresentação (Frontend SPA):</b> Desenvolvida em React 19 com TypeScript, empacotada via Vite 7. Renderiza a interface reativa, manipulação cartográfica com a biblioteca Leaflet e gestão de estado em tempo de execução.<br><br>
+  <b>2. Camada de Serviços e Negócio (Backend REST API):</b> Construída em Node.js com a framework Express. Centraliza a validação de regras de negócio, controlo de sessões JWT, filtragem de dados por perfil RBAC e sanitização de transações.<br><br>
+  <b>3. Camada de Persistência (Database Server):</b> Base de dados relacional MySQL 8.0 alojada no TiDB Cloud Serverless. Gere a integridade referencial, histórico de telemetria GPS e tabelas de frotas e incidentes.
+</div>
+
+<h2 class="subsection-title">3.2. Modelo de Dados Relacional (Dicionário de Tabelas)</h2>
+<p>A base de dados <code>smartbus_uem</code> é composta por 10 tabelas relacionais em terceira forma normal (3NF):</p>
+
+<table class="custom-table">
+  <thead>
+    <tr>
+      <th>Tabela</th>
+      <th>Chave Primária</th>
+      <th>Chaves Estrangeiras</th>
+      <th>Finalidade e Conteúdo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>perfis</code></td>
+      <td><code>id</code> (PK)</td>
+      <td>—</td>
+      <td>Tabela de perfis do sistema (1: funcionario, 2: motorista, 3: administrador).</td>
+    </tr>
+    <tr>
+      <td><code>utilizadores</code></td>
+      <td><code>id</code> (PK)</td>
+      <td><code>perfil_id</code> ➔ perfis</td>
+      <td>Contas institucionais, emails (@uem.mz), hashes de palavra-passe e matrículas funcionais.</td>
+    </tr>
+    <tr>
+      <td><code>autocarros</code></td>
+      <td><code>id</code> (PK)</td>
+      <td><code>rota_id</code> ➔ rotas</td>
+      <td>Cadastro das viaturas (código UEM, matrícula, capacidade, estado operacional, coordenadas GPS).</td>
+    </tr>
+    <tr>
+      <td><code>autocarro_motoristas</code></td>
+      <td><code>autocarro_id, motorista_id, inicio</code></td>
+      <td><code>autocarro_id, motorista_id</code></td>
+      <td>Tabela associativa de alocação temporal de motoristas às viaturas da frota.</td>
+    </tr>
+    <tr>
+      <td><code>rotas</code></td>
+      <td><code>id</code> (PK)</td>
+      <td>—</td>
+      <td>Linhas e percursos universitários (código, origem, destino, horário de saída e chegada).</td>
+    </tr>
+    <tr>
+      <td><code>paragens</code></td>
+      <td><code>id</code> (PK)</td>
+      <td>—</td>
+      <td>Pontos físicos de paragem de passageiros com coordenadas geográficas (latitude e longitude).</td>
+    </tr>
+    <tr>
+      <td><code>paragens_rota</code></td>
+      <td><code>rota_id, paragem_id, ordem</code></td>
+      <td><code>rota_id, paragem_id</code></td>
+      <td>Sequenciamento ordenado das paragens que compõem cada rota universitária.</td>
+    </tr>
+    <tr>
+      <td><code>incidentes</code></td>
+      <td><code>id</code> (PK)</td>
+      <td><code>autocarro_id, rota_id, criado_por, resolvido_por</code></td>
+      <td>Registo de avarias, atrasos e acidentes, prioridade, estado e histórico de resolução técnica.</td>
+    </tr>
+    <tr>
+      <td><code>notificacoes</code></td>
+      <td><code>id</code> (PK)</td>
+      <td><code>utilizador_id</code> ➔ utilizadores</td>
+      <td>Comunicados de serviço, avisos de desvios de rota e notificações individuais aos utilizadores.</td>
+    </tr>
+    <tr>
+      <td><code>posicoes_gps</code></td>
+      <td><code>id</code> (PK)</td>
+      <td><code>autocarro_id</code> ➔ autocarros</td>
+      <td>Registo cronológico de telemetria histórica (latitude, longitude, velocidade instantânea e carimbo temporal).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="subsection-title">3.3. Mecanismo de Segurança e Proteção Criptográfica</h2>
+<p>O fluxo de segurança do sistema opera em múltiplos níveis de salvaguarda:</p>
+<ul style="margin-left: 20px;">
+  <li><b>Hashing de Senhas:</b> Utilização do algoritmo <code>bcryptjs</code> com fator de trabalho 10. Em nenhuma hipótese as palavras-passe são armazenadas em texto simples.</li>
+  <li><b>Tokens JWT Autocontidos e Auditados:</b> A cada requisição à API, o token Bearer é decodificado e revalidado diretamente na base de dados pelo middleware <code>requireAuth</code>, garantindo que utilizadores inativados pelo administrador percam imediatamente o acesso.</li>
+  <li><b>Proteção contra Injeção SQL:</b> Todas as consultas utilizam *Prepared Statements* com marcadores parametrizados (`?`), eliminando qualquer vetor de injeção de SQL.</li>
+  <li><b>Conexão Encriptada com TiDB Cloud:</b> O driver <code>mysql2</code> foi configurado com protocolo TLS 1.2+ forçado (`ssl: { minVersion: "TLSv1.2", rejectUnauthorized: false }`), impedindo a interceção de dados em trânsito.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- CAPÍTULO 4: IMPLEMENTAÇÃO E MÓDULOS -->
+<!-- ========================================== -->
+<h1 class="section-title">Capítulo 4: Implementação e Apresentação dos Módulos</h1>
+
+<h2 class="subsection-title">4.1. Módulo de Autenticação e Entrada no Sistema</h2>
+<p>A interface de acesso ao SmartBus UEM apresenta um design institucional formal nas cores oficiais da Universidade Eduardo Mondlane (verde institucional <code>#005a36</code>). O sistema solicita o endereço de correio eletrónico institucional e a palavra-passe, contando com botão para exibição ou ocultação de caracteres e validação imediata com o backend em nuvem.</p>
+
+<div class="callout-box">
+  <b>Comportamento após login:</b> O token de sessão é armazenado de forma segura no <code>sessionStorage</code> do navegador, isolando cada aba e impedindo partilha indevida de credenciais entre contas abertas no mesmo equipamento.
+</div>
+
+<h2 class="subsection-title">4.2. Módulo Cockpit Operacional (Visão Geral)</h2>
+<p>O Cockpit adapta-se automaticamente ao perfil do utilizador logado:</p>
+<ul style="margin-left: 20px;">
+  <li><b>Para o Administrador:</b> Exibe cartões com a taxa de disponibilidade da frota, total de viaturas ativas, contagem de ocorrências críticas em aberto, velocidade média e atalhos rápidos para gestão de viaturas e rotas.</li>
+  <li><b>Para o Motorista (Painel de Bordo):</b> Destaca em primeiro plano o autocarro sob sua responsabilidade (ex.: UEM-01), o estado do motor, o próximo terminal e o botão de emergência destacado.</li>
+  <li><b>Para o Funcionário:</b> Exibe os próximos autocarros a circular e o tempo estimado de chegada às paragens centrais.</li>
+</ul>
+
+<h2 class="subsection-title">4.3. Módulo Mapa em Tempo Real (Cartografia e Telemetria)</h2>
+<p>O módulo cartográfico integra a biblioteca <b>Leaflet</b> sobre a base cartográfica livre <b>OpenStreetMap</b>. Os autocarros são renderizados como marcadores dinâmicos circulares estilizados com o código da viatura (ex.: UEM-01, UEM-02). A cor do marcador reflete em tempo real o estado de circulação:</p>
+<ul style="margin-left: 20px;">
+  <li>🟢 <b>Verde (#10b981):</b> Autocarro em circulação regular.</li>
+  <li>🟡 <b>Amarelo (#f59e0b):</b> Autocarro em circulação mas reportado como atrasado.</li>
+  <li>🔴 <b>Vermelho (#dc2626):</b> Autocarro imobilizado por avaria mecânica ou em oficina.</li>
+</ul>
+<p>Ao clicar em qualquer viatura no mapa, abre-se um painel de telemetria flutuante com velocidade em tempo real (km/h), motorista em serviço, trajeto da linha e botão de centralização geográfica imediata.</p>
+
+<h2 class="subsection-title">4.4. Módulo de Rotas, Horários e Paragens Georreferenciadas</h2>
+<p>Apresenta a listagem completa dos percursos universitários da UEM. Cada rota exibe:</p>
+<ul style="margin-left: 20px;">
+  <li>Origem e Destino com horários de saída e chegada estimados.</li>
+  <li>Badges visuais com os autocarros atualmente alocados àquela linha.</li>
+  <li>Modal de itinerário completo que lista sequencialmente todas as paragens físicas, permitindo aos estudantes prever o trajeto com máxima exatidão.</li>
+</ul>
+
+<h2 class="subsection-title">4.5. Módulo Crítico: Acionamento de Avaria Imediata e Imobilização</h2>
+<p>Um dos pontos altos de engenharia do sistema é o fluxo de resposta a falhas mecânicas. Quando um condutor enfrenta uma anomalia em trânsito, aciona o botão <b>🚨 Declarar Avaria Imediata</b> no seu painel. O sistema apresenta um seletor rápido com os motivos mais comuns nas vias de Moçambique:</p>
+<ol style="margin-left: 20px;">
+  <li><b>Avaria Mecânica no Motor:</b> Superaquecimento ou falha de tração.</li>
+  <li><b>Furo de Pneu:</b> Perda de pressão ou necessidade de substituição.</li>
+  <li><b>Pane no Sistema Elétrico:</b> Alternador ou arranque.</li>
+  <li><b>Acidente / Colisão:</b> Sinistro de trânsito.</li>
+  <li><b>Problemas de Travões:</b> Perda de eficiência no sistema de travagem.</li>
+</ol>
+<p>Ao submeter a ocorrência, o backend executa imediatamente:</p>
+<div class="code-snippet">UPDATE autocarros SET estado='em_manutencao', ultima_velocidade=0 WHERE id = finalBusId;</div>
+<p>No mesmo instante, o marcador do autocarro no mapa passa para a cor vermelha e todos os passageiros e despachantes sabem de imediato que aquela viatura não passará na próxima paragem, eliminando a espera inútil.</p>
+
+<h2 class="subsection-title">4.6. Módulo de Relatórios, Métricas e IA Preditiva</h2>
+<p>Exclusivo para a Direção da UEM, este módulo consolida os indicadores de desempenho operacional da frota:</p>
+<ul style="margin-left: 20px;">
+  <li><b>Score de Eficiência da Frota (0 a 100):</b> Algoritmo ponderado baseado na percentagem de viaturas ativas, cumprimento de horários e taxa de resolução de incidentes.</li>
+  <li><b>Gráficos Estatísticos:</b> Gráfico Donut em SVG da distribuição da frota e gráfico de barras com a tipologia de avarias no período selecionado.</li>
+  <li><b>Motor de Diagnóstico Preditivo por IA:</b> Analisa a reincidência de falhas mecânicas por autocarro. Quando uma viatura atinge 2 ou mais ocorrências, a IA emite automaticamente um alerta preventivo solicitando revisão mecânica urgente antes da próxima escala para prevenir avarias em plena avenida.</li>
+  <li><b>Exportação Formal:</b> Permite o download das métricas operacionais consolidadas em ficheiro CSV e gera folha de impressão em padrão oficial A4 para despachos institucionais.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- CAPÍTULO 5: INFRAESTRUTURA E DEPLOY -->
+<!-- ========================================== -->
+<h1 class="section-title">Capítulo 5: Infraestrutura em Nuvem e Deploy Permanente</h1>
+
+<h2 class="subsection-title">5.1. Topologia de Implantação em Nuvem</h2>
+<p>Para assegurar que o sistema permanecesse no ar 24 horas por dia de forma perene e sem custos de infraestrutura para a universidade, selecionou-se uma arquitetura moderna baseada em computação elástica:</p>
+
+<table class="custom-table">
+  <thead>
+    <tr>
+      <th>Serviço</th>
+      <th>Provedor</th>
+      <th>Configuração / Recursos</th>
+      <th>Regime de Disponibilidade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Base de Dados Relacional</b></td>
+      <td><b>TiDB Cloud Serverless</b></td>
+      <td>Cluster MySQL 8.0, 5 GB de armazenamento permanente, conexões cifradas TLS 1.2+.</td>
+      <td>Permanente (Forever Free) · Uptime contínuo sem encerramento de período de teste.</td>
+    </tr>
+    <tr>
+      <td><b>Aplicação Full-Stack</b></td>
+      <td><b>Render.com</b></td>
+      <td>Web Service Node.js (Linux Ubuntu container), 512 MB RAM, suporte a HTTP/2 e HTTPS.</td>
+      <td>Permanente · Certificado SSL emitido automaticamente por Let's Encrypt.</td>
+    </tr>
+    <tr>
+      <td><b>Controlo de Versões & CI/CD</b></td>
+      <td><b>GitHub</b></td>
+      <td>Repositório <code>SmartBus_UEM_sistema</code> com gatilho automático de deploy a cada commit.</td>
+      <td>Contínuo.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="subsection-title">5.2. Pipeline de Compilação Unificada (Monólito Otimizado)</h2>
+<p>Para eliminar problemas comuns de CORS e múltiplos servidores, o sistema utiliza uma compilação simbiótica configurada no <code>package.json</code>:</p>
+<div class="code-snippet">"build": "vite build && esbuild backend/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"
+"start": "node dist/index.js"</div>
+<p>O Vite compila os ficheiros React para a pasta <code>dist/public</code>, enquanto o <code>esbuild</code> empacota a API Node.js no ficheiro <code>dist/index.js</code>. Em produção, o servidor Express atende as chamadas REST em <code>/api/*</code> e simultaneamente serve os ficheiros estáticos do frontend em todas as outras rotas, gerando uma experiência web ultrarrápida num único domínio unificado.</p>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- CAPÍTULO 6: CONCLUSÃO -->
+<!-- ========================================== -->
+<h1 class="section-title">Capítulo 6: Conclusões e Trabalhos Futuros</h1>
+
+<h2 class="subsection-title">6.1. Síntese dos Resultados Alcançados</h2>
+<p>O desenvolvimento do <b>SmartBus UEM</b> atingiu plenamente todos os objetivos gerais e específicos traçados inicialmente. Foi possível construir uma plataforma completa, robusta e aderente à realidade do transporte universitário em Moçambique.</p>
+<p>O sistema elimina a incerteza dos passageiros, empodera os motoristas com ferramentas digitais simples e práticas para reporte de incidentes, e fornece à gestão da UEM dados analíticos em tempo real para orientar investimentos na frota e manutenções preventivas.</p>
+<p>A publicação do sistema na nuvem com dados institucionais reais comprova que é perfeitamente viável conceber sistemas universitários de padrão internacional utilizando tecnologias abertas e modernas de baixo custo e alta eficiência.</p>
+
+<h2 class="subsection-title">6.2. Trabalhos e Desenvolvimentos Futuros</h2>
+<p>Como propostas de extensão e evolução contínua da plataforma para os próximos anos académicos, recomenda-se:</p>
+<ol style="margin-left: 20px;">
+  <li><b>Integração de Hardware IoT / Rastreadores OBD-II:</b> Conectar dispositivos GPS físicos instalados diretamente na tomada OBD-II dos autocarros da UEM para transmissão automática de dados sem intervenção humana.</li>
+  <li><b>Progressive Web App (PWA) e Notificações Push:</b> Habilitar suporte nativo a PWA com notificações sonoras nos telemóveis dos estudantes quando o autocarro estiver a 5 minutos da sua paragem habitual.</li>
+  <li><b>Bilheteira Eletrónica e Cartão de Estudante (NFC):</b> Integrar a leitura do cartão universitário via sensor NFC para controlo de lotação e estatísticas de passageiros transportados por trajeto.</li>
+  <li><b>Algoritmo de Machine Learning Preditivo com Histórico de Trânsito:</b> Treinar modelos estatísticos considerando o tráfego típico dos horários de ponta em Maputo (manhã e final de tarde) para calibrar com exatidão matemática o tempo estimado de chegada (ETA).</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- ========================================== -->
+<!-- REFERÊNCIAS BIBLIOGRÁFICAS -->
+<!-- ========================================== -->
+<h1 class="section-title">Referências Bibliográficas</h1>
+
+<p class="no-indent" style="margin-bottom: 15px;">
+  [1] FIELDING, Roy Thomas. <i>Architectural Styles and the Design of Network-based Software Architectures</i>. Doctoral Dissertation, University of California, Irvine, 2000.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [2] FLANAGAN, David. <i>JavaScript: The Definitive Guide - Master the World's Most-Used Programming Language</i>. 7. ed. O'Reilly Media, 2020.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [3] FOWLER, Martin. <i>Patterns of Enterprise Application Architecture</i>. Boston: Addison-Wesley, 2002.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [4] LEAFLET JS. <i>An open-source JavaScript library for mobile-friendly interactive maps</i>. Disponível em: &lt;https://leafletjs.com&gt;. Acesso em: 18 nov. 2026.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [5] NIELSEN, Jakob. <i>Usability Engineering</i>. San Francisco: Morgan Kaufmann Publishers, 1993.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [6] PRESSMAN, Roger S.; MAXIM, Bruce R. <i>Engenharia de Software: Uma Abordagem Profissional</i>. 8. ed. Porto Alegre: AMGH Editora, 2016.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [7] REACT DOCUMENTATION. <i>React: The library for web and native user interfaces</i>. Disponível em: &lt;https://react.dev&gt;. Acesso em: 18 nov. 2026.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [8] SILBERSCHATZ, Abraham; KORTH, Henry F.; SUDARSHAN, S. <i>Sistema de Banco de Dados</i>. 7. ed. Rio de Janeiro: Elsevier, 2020.
+</p>
+<p class="no-indent" style="margin-bottom: 15px;">
+  [9] UNIVERSIDADE EDUARDO MONDLANE. <i>Plano Estratégico da UEM (2018-2028): Rumo a uma Universidade de Investigação</i>. Maputo: Imprensa Universitária, 2018.
+</p>
+
+</body>
+</html>
